@@ -15,5 +15,5 @@ Make a messenger with modular encoding and different servers.
 [gevorgyana]: <https://github.com/gevorgyana>
 
 ### Current status
-idea, starting soon...
+idea, starting now...?
 
