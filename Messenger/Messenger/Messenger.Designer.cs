@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Forms;
 
 namespace Messenger
 {
@@ -57,7 +58,6 @@ namespace Messenger
 			// 
 			this.main_SplitContainer.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31)))));
 			this.main_SplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.main_SplitContainer.IsSplitterFixed = true;
 			this.main_SplitContainer.Location = new System.Drawing.Point(0, 0);
 			this.main_SplitContainer.Name = "main_SplitContainer";
 			// 
@@ -105,7 +105,7 @@ namespace Messenger
 			this.listOfChat_FlowLayoutPanel.Size = new System.Drawing.Size(266, 426);
 			this.listOfChat_FlowLayoutPanel.TabIndex = 0;
 			this.listOfChat_FlowLayoutPanel.WrapContents = false;
-			this.listOfChat_FlowLayoutPanel.SizeChanged += new System.EventHandler(this.ListOfChat_FlowLayoutPanel_SizeChanged);
+			this.listOfChat_FlowLayoutPanel.SizeChanged += new System.EventHandler(this.ItemList_FlowLayoutPanel_SizeChanged);
 			// 
 			// chat_SplitContainer
 			// 
@@ -159,7 +159,7 @@ namespace Messenger
 			this.chat_FlowLayoutPanel.Size = new System.Drawing.Size(530, 370);
 			this.chat_FlowLayoutPanel.TabIndex = 0;
 			this.chat_FlowLayoutPanel.WrapContents = false;
-			this.chat_FlowLayoutPanel.SizeChanged += new System.EventHandler(this.Chat_FlowLayoutPanel_SizeChanged);
+			this.chat_FlowLayoutPanel.SizeChanged += new System.EventHandler(this.ItemList_FlowLayoutPanel_SizeChanged);
 			// 
 			// message_TextBox
 			// 
@@ -177,6 +177,7 @@ namespace Messenger
 			this.message_TextBox.TabIndex = 0;
 			this.message_TextBox.WordWrap = false;
 			this.message_TextBox.TextChanged += new System.EventHandler(this.Message_TextBox_TextChanged);
+			this.message_TextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Message_TextBox_KeyDown);
 			// 
 			// Messenger
 			// 
@@ -186,6 +187,7 @@ namespace Messenger
 			this.ClientSize = new System.Drawing.Size(800, 500);
 			this.Controls.Add(this.main_SplitContainer);
 			this.DoubleBuffered = true;
+			this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
 			this.MinimumSize = new System.Drawing.Size(500, 500);
 			this.Name = "Messenger";
 			this.Text = "Messenger";
