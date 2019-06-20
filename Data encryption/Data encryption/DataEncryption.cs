@@ -10,36 +10,43 @@ using System.IO;
 namespace Data_encryption
 {
 	class DataEncryption
-	{
-		public static Tuple<string, string> generatePrivateKey()
+	{ 
+		//generate private key
+		public static string generatePrivateKey()
 		{
 			var RSA = new RSACryptoServiceProvider();
-			string pr_key = RSA.ToXmlString(true);
-			string pb_key = RSA.ToXmlString(false);
-			return new Tuple<string, string> (pr_key, pb_key);
+			return RSA.ToXmlString(true);
 		}
 
-		public static string Decrypt(string data, string key)
+		//generate public key over private key
+		public static string generatePublicKey(string privateKey)
+		{
+			var RSA = new RSACryptoServiceProvider();
+			RSA.FromXmlString(privateKey);
+			return RSA.ToXmlString(false);
+		}
+
+		//decrypt data by asymmetric algo (private key required)
+		public static string Decrypt(string data, string privateKey)
 		{
 			var RSA = new RSACryptoServiceProvider();
 			var dataArray = data.Split(new char[] { ',' });
 			byte[] dataByte = new byte[dataArray.Length];
 
 			for (int i = 0; i < dataArray.Length; i++)
-			{
 				dataByte[i] = Convert.ToByte(dataArray[i]);
-			}
 
-			RSA.FromXmlString(key);
+			RSA.FromXmlString(privateKey);
 			var decryptedByte = RSA.Decrypt(dataByte, false);
 			UnicodeEncoding encoding = new UnicodeEncoding();
 			return encoding.GetString(decryptedByte);
 		}
 
-		public static string Encrypt(string data, string key)
+		//encrypt data by asymmetric algo (public key required)
+		public static string Encrypt(string data, string publicKey)
 		{
 			var RSA = new RSACryptoServiceProvider();
-			RSA.FromXmlString(key);
+			RSA.FromXmlString(publicKey);
 			UnicodeEncoding encoding = new UnicodeEncoding();
 			var dataToEncrypt = encoding.GetBytes(data);
 			var encryptedByteArray = RSA.Encrypt(dataToEncrypt, false).ToArray();

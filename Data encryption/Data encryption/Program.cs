@@ -19,18 +19,18 @@ namespace Data_encryption
 			}
 			Console.WriteLine(erere.Length);
 			Console.WriteLine('\n');
-			Tuple<string, string> keys = DataEncryption.generatePrivateKey();
-
-			Console.WriteLine(keys.Item1);
-			Console.WriteLine(keys.Item2);
+			string privateKey = DataEncryption.generatePrivateKey();
+			string publicKey = DataEncryption.generatePublicKey(privateKey);
+			
+			Console.WriteLine(privateKey);
+			Console.WriteLine(publicKey);
 			Console.WriteLine(erere);
-			string x = DataEncryption.Encrypt(erere, keys.Item2);
+			string x = DataEncryption.Encrypt(erere, publicKey);
 			Console.WriteLine(x);
-			string y = DataEncryption.Decrypt(x, keys.Item1);
+			string y = DataEncryption.Decrypt(x, privateKey);
 			Console.WriteLine(y);
 
-
-			Console.ReadKey();
+			x = Console.ReadLine();
 		}
 	}
 }
