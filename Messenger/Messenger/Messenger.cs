@@ -115,8 +115,9 @@ namespace Messenger
 			{
 				Anchor = ((AnchorStyles)((AnchorStyles.Top | AnchorStyles.Left))),
 				Location = new Point(10, 10),
-				BackColor = Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64))))),
+				BackColor = forUser ? Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(45))))) : Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64))))),
 				Font = new System.Drawing.Font("Microsoft Sans Serif", 10F),
+				ForeColor = Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224))))),
 				BorderStyle = System.Windows.Forms.BorderStyle.None,
 				Name = "messageBlock_TextBox",
 				Multiline = true,
@@ -161,9 +162,9 @@ namespace Messenger
 
 			Panel message_Panel = new Panel
 			{
-				Anchor = System.Windows.Forms.AnchorStyles.Right,
-				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64))))),
-				Location = new System.Drawing.Point(lineMessage_Panel.Width - message_Size.Width - 10, 10),
+				Anchor = forUser ? AnchorStyles.Left : AnchorStyles.Right,
+				BackColor = forUser ? Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(45))))) : Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64))))),
+				Location = new System.Drawing.Point(forUser ? 10 : (lineMessage_Panel.Width - message_Size.Width - 10), 10),
 				Name = "message_Panel",
 				Size = message_Size,
 				TabIndex = 1
@@ -236,6 +237,12 @@ namespace Messenger
 			if (e.KeyCode == Keys.Enter && e.Modifiers != Keys.Shift && e.Modifiers != Keys.Control && this.message_TextBox.Text != "")
 			{
 				AddMessage(this.message_TextBox.Text, DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString(), false);
+				this.needClearMessageTextBox = true;
+				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
+			}
+			else if (e.KeyCode == Keys.J && this.message_TextBox.Text != "")
+			{
+				AddMessage(this.message_TextBox.Text, DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString(), true);
 				this.needClearMessageTextBox = true;
 				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
 			}
