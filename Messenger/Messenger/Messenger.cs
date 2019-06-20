@@ -24,6 +24,12 @@ namespace Messenger
 		private bool newChatIsOpen;
 		private Panel newChat_Panel;
 
+		private bool getPublickeyIsOpen;
+		private Panel getPublickey_panel;
+
+		private string privateKey;
+		private string publicKey;
+
 
 		public Messenger()
 		{
@@ -35,6 +41,7 @@ namespace Messenger
 
 			this.optionIsOpen = false;
 			this.newChatIsOpen = false;
+			this.getPublickeyIsOpen = false;
 		}
 
 
@@ -76,14 +83,26 @@ namespace Messenger
 				Size = new Size(200, 40)
 			};
 			newChat_Button.Click += new EventHandler(this.NewChat_Button_Click);
+			
+			Button getPublicKey_Button = new Button
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Name = "getPublicKey_Button",
+				Text = "Create new chat",
+				Location = new Point(10, 150),
+				Size = new Size(200, 40)
+			};
+			getPublicKey_Button.Click += new EventHandler(this.GetPublicKey_Button_Click);
 
 			userName_TextBox.TextChanged += new EventHandler(this.UserName_TextChanged);
 			userName_TextBox.LostFocus += new EventHandler(this.UserName_TextBox_LostFocus);
 
 			this.option_Panel.Controls.Add(userName_TextBox);
 			this.option_Panel.Controls.Add(newChat_Button);
+			this.option_Panel.Controls.Add(getPublicKey_Button);
 		}
-		
+
 		private void CreateNewChat_Panel()
 		{
 			this.newChat_Panel = new Panel
@@ -142,6 +161,37 @@ namespace Messenger
 			this.newChat_Panel.Controls.Add(create_Button);
 		}
 
+		private void CreateGetPublickey_Panel()
+		{
+			this.getPublickey_panel = new Panel
+			{
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Anchor = ((AnchorStyles)((AnchorStyles.Top | AnchorStyles.Left))),
+				AutoSize = true,
+				Location = new Point(0, 0),
+				Name = "option_Panel",
+				Size = new Size(250, this.Height)
+			};
+
+			TextBox publicKey_TextBox = new TextBox
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				BorderStyle = System.Windows.Forms.BorderStyle.None,
+				Font = new System.Drawing.Font("Microsoft Sans Serif", 12F),
+				ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224))))),
+				Location = new System.Drawing.Point(10, 60),
+				Name = "publicKey_TextBox",
+				Text = publicKey,
+				ReadOnly = true,
+				Multiline = true,
+				Size = new System.Drawing.Size(200, 200),
+				TabIndex = 0
+			};
+
+			this.getPublickey_panel.Controls.Add(publicKey_TextBox);
+		}
+
 
 		private void Create_Button_Click(object sender, EventArgs e)
 		{
@@ -175,6 +225,7 @@ namespace Messenger
 		{
 			CreateOption_Panel();
 			CreateNewChat_Panel();
+			CreateGetPublickey_Panel();
 
 			for (int i = 0; i < 7; ++i)
 			{
@@ -345,15 +396,12 @@ namespace Messenger
 
 		private void NewChat_Button_Click(object sender, EventArgs e)
 		{
-			this.newChatIsOpen = true;
-
-			this.Controls.Remove(this.option_Panel);
-			this.Controls.Add(this.newChat_Panel);
-			this.Controls.SetChildIndex(this.newChat_Panel, 0);
-
-			DisableAllControls(this);
-			EnableControls(this.newChat_Panel);
-			EnableAllControls(this.newChat_Panel);
+			OpenOption(ref this.newChatIsOpen, this.newChat_Panel);
+		}
+		
+		private void GetPublicKey_Button_Click(object sender, EventArgs e)
+		{
+			OpenOption(ref this.getPublickeyIsOpen, this.getPublickey_panel);
 		}
 
 
@@ -421,7 +469,7 @@ namespace Messenger
 			}
 		}
 
-
+		//Option part
 		private void Option_PictureBox_MouseMove(object sender, MouseEventArgs e)
 		{
 			this.option_PictureBox.Image = global::Messenger.Properties.Resources.Option_hover_;
@@ -434,24 +482,28 @@ namespace Messenger
 		
 		private void Option_PictureBox_Click(object sender, EventArgs e)
 		{
-			this.optionIsOpen = true;
-
-			this.Controls.Add(this.option_Panel);
-			this.Controls.SetChildIndex(this.option_Panel, 0);
-
-			DisableAllControls(this);
-			EnableControls(this.option_Panel);
-			EnableAllControls(this.option_Panel);
+			OpenOption(ref this.optionIsOpen, this.option_Panel);
 		}
 		
+		private void OpenOption(ref bool isOpen, Control control)
+		{
+			isOpen = true;
+
+			this.Controls.Add(control);
+			this.Controls.SetChildIndex(control, 0);
+
+			DisableAllControls(this);
+			EnableControls(control);
+			EnableAllControls(control);
+		}
 
 		private void CloseOptions()
 		{
 			this.optionIsOpen = true;
 			this.newChatIsOpen = true;
+			this.getPublickeyIsOpen = true;
 
 			EnableAllControls(this);
-
 			if (this.Controls.Contains(this.option_Panel))
 			{
 				this.Controls.Remove(this.option_Panel);
@@ -460,11 +512,15 @@ namespace Messenger
 			{
 				this.Controls.Remove(this.newChat_Panel);
 			}
+			if (this.Controls.Contains(this.getPublickey_panel))
+			{
+				this.Controls.Remove(this.getPublickey_panel);
+			}
 		}
 
 		private void Messenger_Click(object sender, EventArgs e)
 		{
-			if (this.optionIsOpen || this.newChatIsOpen)
+			if (this.optionIsOpen || this.newChatIsOpen || this.getPublickeyIsOpen)
 			{
 				if (!((((MouseEventArgs)e).Location.X <= this.option_Panel.Size.Width && ((MouseEventArgs)e).Location.Y <= this.option_Panel.Height)))
 				{
@@ -473,7 +529,7 @@ namespace Messenger
 			}
 		}
 
-
+		//Enable and Disable Controls
 		private void DisableAllControls(Control control)
 		{
 			foreach (Control contr in control.Controls)
