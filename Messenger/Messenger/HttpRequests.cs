@@ -11,7 +11,21 @@ namespace Messenger
     {
         public static readonly HttpClient client = new HttpClient();
 
-        public async Task SendMessage(string sender, string receiver, string message)
+        public string SendMessage(string sender, string receiver, string message)
+        {
+            var values = new Dictionary<string, string>
+            {
+               { "sender", sender },
+               { "receiver", receiver },
+               { "message", message }
+            };
+
+            var content = new FormUrlEncodedContent(values);
+            var response = client.PostAsync("http://localhost:8080/send_message", content).Result;
+            return response.ToString();
+        }
+
+        public async Task SendMessageAsync(string sender, string receiver, string message)
         {
 
             var values = new Dictionary<string, string>
@@ -30,7 +44,20 @@ namespace Messenger
             System.Console.WriteLine(responseString);
         }
 
-        public async Task<string> GetMessages(string sender, string receiver)
+        public string GetMessages(string sender, string receiver)
+        {
+            var values = new Dictionary<string, string>
+            {
+               { "sender", sender },
+               { "receiver", receiver }
+            };
+
+            var content = new FormUrlEncodedContent(values);
+            var response = client.PostAsync("http://localhost:8080/get_messages", content).Result;
+            return response.ToString();
+        }
+
+        public async Task<string> GetMessagesAsync(string sender, string receiver)
         {
 
             var values = new Dictionary<string, string>
@@ -50,7 +77,20 @@ namespace Messenger
             //System.Console.WriteLine(responseString);
         }
 
-        public async Task<string> DeleteMessages(string sender, string receiver)
+        public string DeleteMessages(string sender, string receiver)
+        {
+            var values = new Dictionary<string, string>
+            {
+               { "sender", sender },
+               { "receiver", receiver }
+            };
+
+            var content = new FormUrlEncodedContent(values);
+            var response = client.PostAsync("http://localhost:8080/delete_messages", content).Result;
+            return response.ToString();
+        }
+
+        public async Task<string> DeleteMessagesAsync(string sender, string receiver)
         {
 
             var values = new Dictionary<string, string>

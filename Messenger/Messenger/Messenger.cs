@@ -196,7 +196,7 @@ namespace Messenger
 			UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
 			this.chat_FlowLayoutPanel.ResumeLayout();
 
-			this.httpRequests.SendMessage(this.userName, "someone", text).Wait();
+			this.httpRequests.SendMessage(this.userName, "someone", text);
 		}
 
 		private void LoadChat(string id)
