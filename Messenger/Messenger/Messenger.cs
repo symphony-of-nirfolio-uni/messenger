@@ -30,6 +30,7 @@ namespace Messenger
 		private string privateKey;
 		private string publicKey;
 
+		private bool firstStart;
 
 		public Messenger()
 		{
@@ -42,6 +43,10 @@ namespace Messenger
 			this.optionIsOpen = false;
 			this.newChatIsOpen = false;
 			this.getPublickeyIsOpen = false;
+			this.firstStart = true;
+
+			this.privateKey = "";
+			this.publicKey = "";
 		}
 
 
@@ -227,6 +232,28 @@ namespace Messenger
 			CreateNewChat_Panel();
 			CreateGetPublickey_Panel();
 
+			//loading settings
+			//TODO:
+			this.firstStart = true;
+
+			if (this.firstStart)
+			{
+				this.Controls.Remove(this.main_SplitContainer);
+
+				Button generateKeys_button = new Button
+				{
+					Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+					BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+					Name = "generateKeys_button",
+					Text = "Generate profile, private and public keys",
+					Location = new Point(this.Width / 2 - 100, this.Height / 2 - 50),
+					Size = new Size(200, 100)
+				};
+				generateKeys_button.Click += new EventHandler(this.GenerateKeys_button_Click);
+
+				this.Controls.Add(generateKeys_button);
+			}
+
 			for (int i = 0; i < 7; ++i)
 			{
 				AddChat("Something " + i.ToString(), i.ToString(), "6:53 PM");
@@ -235,6 +262,13 @@ namespace Messenger
 			this.message_TextBox.Select();
 		}
 
+		private void GenerateKeys_button_Click(object sender, EventArgs e)
+		{
+			//TODO:
+
+			this.Controls.Clear();
+			this.Controls.Add(main_SplitContainer);
+		}
 
 		private void AddChat(string name, string id, string time)
 		{
