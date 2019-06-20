@@ -14,11 +14,16 @@ namespace Messenger
 	{
 		private bool needClearMessageTextBox;
 
+		private HttpRequests httpRequests;
+		private string userName;
+
 		public Messenger()
 		{
 			InitializeComponent();
 
 			this.needClearMessageTextBox = false;
+			this.httpRequests = new HttpRequests();
+			this.userName = "noname";
 		}
 
 
@@ -190,6 +195,8 @@ namespace Messenger
 			this.chat_FlowLayoutPanel.AutoScrollPosition = new Point(22, 100000);
 			UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
 			this.chat_FlowLayoutPanel.ResumeLayout();
+
+			this.httpRequests.SendMessage(this.userName, "someone", text).Wait();
 		}
 
 		private void LoadChat(string id)
