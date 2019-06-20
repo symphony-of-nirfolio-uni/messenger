@@ -109,8 +109,9 @@ namespace Messenger
 			this.option_PictureBox.Size = new System.Drawing.Size(48, 48);
 			this.option_PictureBox.TabIndex = 0;
 			this.option_PictureBox.TabStop = false;
-			this.option_PictureBox.MouseMove += new MouseEventHandler(this.Option_PictureBox_MouseMove);
-			this.option_PictureBox.MouseLeave += new EventHandler(this.Option_PictureBox_MouseLeave);
+			this.option_PictureBox.Click += new System.EventHandler(this.Option_PictureBox_Click);
+			this.option_PictureBox.MouseLeave += new System.EventHandler(this.Option_PictureBox_MouseLeave);
+			this.option_PictureBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Option_PictureBox_MouseMove);
 			// 
 			// listOfChat_FlowLayoutPanel
 			// 
@@ -210,6 +211,7 @@ namespace Messenger
 			this.Name = "Messenger";
 			this.Text = "Messenger";
 			this.Load += new System.EventHandler(this.Messenger_Load);
+			this.Click += new EventHandler(this.Messenger_Click);
 			this.main_SplitContainer.Panel1.ResumeLayout(false);
 			this.main_SplitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.main_SplitContainer)).EndInit();

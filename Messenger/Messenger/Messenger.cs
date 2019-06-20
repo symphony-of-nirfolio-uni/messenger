@@ -17,6 +17,9 @@ namespace Messenger
 		private HttpRequests httpRequests;
 		private string userName;
 
+		private Panel option_Panel;
+
+
 		public Messenger()
 		{
 			InitializeComponent();
@@ -27,8 +30,50 @@ namespace Messenger
 		}
 
 
+		private void CreateOptionPanel()
+		{
+			this.option_Panel = new Panel
+			{
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Anchor = ((AnchorStyles)((AnchorStyles.Top | AnchorStyles.Left))),
+				AutoSize = true,
+				Location = new Point(0, 0),
+				Name = "option_Panel",
+				Size = new Size(250, this.Height)
+			};
+
+			TextBox userName_TextBox = new TextBox
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				BorderStyle = System.Windows.Forms.BorderStyle.None,
+				Font = new System.Drawing.Font("Microsoft Sans Serif", 12F),
+				ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224))))),
+				Location = new System.Drawing.Point(10, 60),
+				Name = "message_TextBox",
+				Size = new System.Drawing.Size(150, 20),
+				Text = this.userName,
+				TabIndex = 0,
+				WordWrap = false
+			};
+
+			userName_TextBox.TextChanged += new EventHandler(this.UserName_TextChanged);
+
+			this.option_Panel.Controls.Add(userName_TextBox);
+		}
+
+		private void UserName_TextChanged(object sender, EventArgs e)
+		{
+			if (((TextBox)sender).Text != "")
+			{
+				this.userName = ((TextBox)sender).Text;
+			}
+		}
+
 		private void Messenger_Load(object sender, EventArgs e)
 		{
+			CreateOptionPanel();
+
 			for (int i = 0; i < 7; ++i)
 			{
 				AddChat("Something " + i.ToString(), i.ToString(), "6:53 PM");
@@ -181,20 +226,10 @@ namespace Messenger
 			
 			lineMessage_Panel.Controls.Add(message_Panel);
 
-			Control[] controls = new Control[this.chat_FlowLayoutPanel.Controls.Count + 1];
-			controls[0] = lineMessage_Panel;
-			int index = 1;
-			foreach (Control control in this.chat_FlowLayoutPanel.Controls)
-			{
-				controls[index] = control;
-				++index;
-			}
-			this.chat_FlowLayoutPanel.PerformLayout();
-			this.chat_FlowLayoutPanel.Controls.Clear();
-			this.chat_FlowLayoutPanel.Controls.AddRange(controls);
+			this.chat_FlowLayoutPanel.Controls.Add(lineMessage_Panel);
+			this.chat_FlowLayoutPanel.Controls.SetChildIndex(lineMessage_Panel, 0);
 			this.chat_FlowLayoutPanel.AutoScrollPosition = new Point(22, 100000);
 			UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
-			this.chat_FlowLayoutPanel.ResumeLayout();
 
 			this.httpRequests.SendMessage(this.userName, "someone", text);
 		}
@@ -273,6 +308,63 @@ namespace Messenger
 		private void Option_PictureBox_MouseLeave(object sender, EventArgs e)
 		{
 			this.option_PictureBox.Image = global::Messenger.Properties.Resources.Option;
+		}
+		
+		private void Option_PictureBox_Click(object sender, EventArgs e)
+		{
+			this.Controls.Add(this.option_Panel);
+			this.Controls.SetChildIndex(this.option_Panel, 0);
+
+			DisableAllControls(this);
+			EnableControls(this.option_Panel);
+			EnableAllControls(this.option_Panel);
+		}
+		
+		private void Messenger_Click(object sender, EventArgs e)
+		{
+			if (!((((MouseEventArgs)e).Location.X <= this.option_Panel.Size.Width && ((MouseEventArgs)e).Location.Y <= this.option_Panel.Height)))
+			{
+				EnableAllControls(this);
+
+				this.Controls.Remove(this.option_Panel);
+			}
+		}
+
+
+		private void DisableAllControls(Control control)
+		{
+			foreach (Control contr in control.Controls)
+			{
+				DisableAllControls(contr);
+			}
+			control.Enabled = false;
+		}
+
+		private void EnableAllControls(Control control)
+		{
+			foreach (Control contr in control.Controls)
+			{
+				EnableAllControls(contr);
+			}
+			control.Enabled = true;
+		}
+
+		private void DisableControls(Control control)
+		{
+			if (control != null)
+			{
+				control.Enabled = false;
+				DisableControls(control.Parent);
+			}
+		}
+
+		private void EnableControls(Control control)
+		{
+			if (control != null)
+			{
+				control.Enabled = true;
+				EnableControls(control.Parent);
+			}
 		}
 	}
 }
