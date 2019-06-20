@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataEncryption\DataEncryption.cs" />
     <Compile Include="HttpRequests.cs" />
     <Compile Include="Messenger.cs">
       <SubType>Form</SubType>

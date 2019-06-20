@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Data_encryption;
+
 namespace Messenger
 {
 	public partial class Messenger : Form
@@ -27,6 +29,7 @@ namespace Messenger
 		private bool getPublickeyIsOpen;
 		private Panel getPublickey_panel;
 
+		private TextBox publicKey_TextBox;
 		private string privateKey;
 		private string publicKey;
 
@@ -178,7 +181,7 @@ namespace Messenger
 				Size = new Size(250, this.Height)
 			};
 
-			TextBox publicKey_TextBox = new TextBox
+			publicKey_TextBox = new TextBox
 			{
 				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
 				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
@@ -190,7 +193,7 @@ namespace Messenger
 				Text = publicKey,
 				ReadOnly = true,
 				Multiline = true,
-				Size = new System.Drawing.Size(200, 200),
+				Size = new System.Drawing.Size(200, 400),
 				TabIndex = 0
 			};
 
@@ -265,6 +268,9 @@ namespace Messenger
 		private void GenerateKeys_button_Click(object sender, EventArgs e)
 		{
 			//TODO:
+			this.privateKey = DataEncryption.generatePrivateKey();
+			this.publicKey = DataEncryption.generatePublicKey(this.privateKey);
+			this.publicKey_TextBox.Text = this.publicKey;
 
 			this.Controls.Clear();
 			this.Controls.Add(main_SplitContainer);
