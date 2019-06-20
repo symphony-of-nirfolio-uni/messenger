@@ -186,7 +186,7 @@ namespace Messenger
 			this.message_TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.message_TextBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(25)))));
-			this.message_TextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.message_TextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.message_TextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
 			this.message_TextBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
 			this.message_TextBox.Location = new System.Drawing.Point(48, 15);
@@ -211,7 +211,7 @@ namespace Messenger
 			this.Name = "Messenger";
 			this.Text = "Messenger";
 			this.Load += new System.EventHandler(this.Messenger_Load);
-			this.Click += new EventHandler(this.Messenger_Click);
+			this.Click += new System.EventHandler(this.Messenger_Click);
 			this.main_SplitContainer.Panel1.ResumeLayout(false);
 			this.main_SplitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.main_SplitContainer)).EndInit();

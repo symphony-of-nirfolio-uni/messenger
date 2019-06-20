@@ -16,8 +16,13 @@ namespace Messenger
 
 		private HttpRequests httpRequests;
 		private string userName;
+		private string chatID = "";
 
+		private bool optionIsOpen;
 		private Panel option_Panel;
+
+		private bool newChatIsOpen;
+		private Panel newChat_Panel;
 
 
 		public Messenger()
@@ -27,10 +32,13 @@ namespace Messenger
 			this.needClearMessageTextBox = false;
 			this.httpRequests = new HttpRequests();
 			this.userName = "noname";
+
+			this.optionIsOpen = false;
+			this.newChatIsOpen = false;
 		}
 
 
-		private void CreateOptionPanel()
+		private void CreateOption_Panel()
 		{
 			this.option_Panel = new Panel
 			{
@@ -50,16 +58,108 @@ namespace Messenger
 				Font = new System.Drawing.Font("Microsoft Sans Serif", 12F),
 				ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224))))),
 				Location = new System.Drawing.Point(10, 60),
-				Name = "message_TextBox",
-				Size = new System.Drawing.Size(150, 20),
+				Name = "userName_TextBox",
+				Size = new System.Drawing.Size(200, 20),
 				Text = this.userName,
 				TabIndex = 0,
+				MaxLength = 40,
 				WordWrap = false
 			};
 
+			Button newChat_Button = new Button
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Name = "newChat_Button",
+				Text = "Create new chat",
+				Location = new Point(10, 100),
+				Size = new Size(200, 40)
+			};
+			newChat_Button.Click += new EventHandler(this.NewChat_Button_Click);
+
 			userName_TextBox.TextChanged += new EventHandler(this.UserName_TextChanged);
+			userName_TextBox.LostFocus += new EventHandler(this.UserName_TextBox_LostFocus);
 
 			this.option_Panel.Controls.Add(userName_TextBox);
+			this.option_Panel.Controls.Add(newChat_Button);
+		}
+		
+		private void CreateNewChat_Panel()
+		{
+			this.newChat_Panel = new Panel
+			{
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Anchor = ((AnchorStyles)((AnchorStyles.Top | AnchorStyles.Left))),
+				AutoSize = true,
+				Location = new Point(0, 0),
+				Name = "newChat_Panel",
+				Size = new Size(250, this.Height)
+			};
+
+			TextBox name_TextBox = new TextBox
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle,
+				Font = new System.Drawing.Font("Microsoft Sans Serif", 12F),
+				ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224))))),
+				Location = new System.Drawing.Point(10, 60),
+				Name = "name_TextBox",
+				Size = new System.Drawing.Size(200, 20),
+				TabIndex = 0,
+				MaxLength = 40,
+				WordWrap = false
+			};
+
+			TextBox id_TextBox = new TextBox
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle,
+				Font = new System.Drawing.Font("Microsoft Sans Serif", 12F),
+				ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224))))),
+				Location = new System.Drawing.Point(10, 90),
+				Name = "id_TextBox",
+				Size = new System.Drawing.Size(200, 20),
+				TabIndex = 0,
+				MaxLength = 40,
+				WordWrap = false
+			};
+
+			Button create_Button = new Button
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Name = "newChat_Button",
+				Text = "Create",
+				Location = new Point(10, 130),
+				Size = new Size(200, 40)
+			};
+			create_Button.Click += new EventHandler(this.Create_Button_Click);
+
+			this.newChat_Panel.Controls.Add(id_TextBox);
+			this.newChat_Panel.Controls.Add(name_TextBox);
+			this.newChat_Panel.Controls.Add(create_Button);
+		}
+
+
+		private void Create_Button_Click(object sender, EventArgs e)
+		{
+			this.chatID = ((Button)sender).Parent.Controls[0].Text;
+
+			AddChat(((Button)sender).Parent.Controls[1].Text, this.chatID, GetCurrentTimeForMessage());
+
+			CloseOptions();
+		}
+
+
+		private void UserName_TextBox_LostFocus(object sender, EventArgs e)
+		{
+			if (((TextBox)sender).Text == "")
+			{
+				MessageBox.Show("User name cannot be emtpy", "User name changed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				((TextBox)sender).Select();
+			}
 		}
 
 		private void UserName_TextChanged(object sender, EventArgs e)
@@ -69,10 +169,12 @@ namespace Messenger
 				this.userName = ((TextBox)sender).Text;
 			}
 		}
+		
 
 		private void Messenger_Load(object sender, EventArgs e)
 		{
-			CreateOptionPanel();
+			CreateOption_Panel();
+			CreateNewChat_Panel();
 
 			for (int i = 0; i < 7; ++i)
 			{
@@ -81,6 +183,7 @@ namespace Messenger
 			
 			this.message_TextBox.Select();
 		}
+
 
 		private void AddChat(string name, string id, string time)
 		{
@@ -108,7 +211,7 @@ namespace Messenger
 			{
 				Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right))),
 				AutoSize = true,
-				Location = new System.Drawing.Point(220, 5),
+				Location = new System.Drawing.Point(200, 5),
 				Name = "Time",
 				Size = new System.Drawing.Size(30, 13),
 				TabIndex = 2,
@@ -234,6 +337,26 @@ namespace Messenger
 			this.httpRequests.SendMessage(this.userName, "someone", text);
 		}
 
+
+		private string GetCurrentTimeForMessage()
+		{
+			return DateTime.Now.Hour.ToString() + ":" + (DateTime.Now.Minute < 10 ? "0" : DateTime.Now.Minute.ToString());
+		}
+
+		private void NewChat_Button_Click(object sender, EventArgs e)
+		{
+			this.newChatIsOpen = true;
+
+			this.Controls.Remove(this.option_Panel);
+			this.Controls.Add(this.newChat_Panel);
+			this.Controls.SetChildIndex(this.newChat_Panel, 0);
+
+			DisableAllControls(this);
+			EnableControls(this.newChat_Panel);
+			EnableAllControls(this.newChat_Panel);
+		}
+
+
 		private void LoadChat(string id)
 		{
 			for (int i = 0; i < 7; ++i)
@@ -243,9 +366,7 @@ namespace Messenger
 
 			this.message_TextBox.Select();
 		}
-
-		private string chatID = "";
-
+		
 		private void CreateChat(object sender, EventArgs e)
 		{
 			if (((Panel)sender).Controls[0].Text != chatID)
@@ -257,6 +378,7 @@ namespace Messenger
 				LoadChat(chatID);
 			}
 		}
+
 
 		private void UpdateFlowLayoutPanel(object sender)
 		{
@@ -278,13 +400,13 @@ namespace Messenger
 		{
 			if (e.KeyCode == Keys.Enter && e.Modifiers != Keys.Shift && e.Modifiers != Keys.Control && this.message_TextBox.Text != "")
 			{
-				AddMessage(this.message_TextBox.Text, DateTime.Now.Hour.ToString() + ":" + (DateTime.Now.Minute < 10 ? "0" : DateTime.Now.Minute.ToString()), false);
+				AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), false);
 				this.needClearMessageTextBox = true;
 				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
 			}
 			else if (e.KeyCode == Keys.J && this.message_TextBox.Text != "")
 			{
-				AddMessage(this.message_TextBox.Text, DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString(), true);
+				AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), true);
 				this.needClearMessageTextBox = true;
 				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
 			}
@@ -312,6 +434,8 @@ namespace Messenger
 		
 		private void Option_PictureBox_Click(object sender, EventArgs e)
 		{
+			this.optionIsOpen = true;
+
 			this.Controls.Add(this.option_Panel);
 			this.Controls.SetChildIndex(this.option_Panel, 0);
 
@@ -320,13 +444,32 @@ namespace Messenger
 			EnableAllControls(this.option_Panel);
 		}
 		
+
+		private void CloseOptions()
+		{
+			this.optionIsOpen = true;
+			this.newChatIsOpen = true;
+
+			EnableAllControls(this);
+
+			if (this.Controls.Contains(this.option_Panel))
+			{
+				this.Controls.Remove(this.option_Panel);
+			}
+			if (this.Controls.Contains(this.newChat_Panel))
+			{
+				this.Controls.Remove(this.newChat_Panel);
+			}
+		}
+
 		private void Messenger_Click(object sender, EventArgs e)
 		{
-			if (!((((MouseEventArgs)e).Location.X <= this.option_Panel.Size.Width && ((MouseEventArgs)e).Location.Y <= this.option_Panel.Height)))
+			if (this.optionIsOpen || this.newChatIsOpen)
 			{
-				EnableAllControls(this);
-
-				this.Controls.Remove(this.option_Panel);
+				if (!((((MouseEventArgs)e).Location.X <= this.option_Panel.Size.Width && ((MouseEventArgs)e).Location.Y <= this.option_Panel.Height)))
+				{
+					CloseOptions();
+				}
 			}
 		}
 
