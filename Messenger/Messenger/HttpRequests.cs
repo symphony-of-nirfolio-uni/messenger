@@ -9,7 +9,16 @@ namespace Messenger
 {
     class HttpRequests
     {
-        public static readonly HttpClient client = new HttpClient();
+        public readonly HttpClient client;
+
+        public HttpRequests()
+        {
+            this.client = new HttpClient { BaseAddress = new Uri("http://localhost:8080") };
+        }
+        public HttpRequests(string url)
+        {
+            this.client = new HttpClient {BaseAddress = new Uri(url)};
+        }
 
         public string SendMessage(string sender, string receiver, string message)
         {
@@ -21,7 +30,7 @@ namespace Messenger
             };
 
             var content = new FormUrlEncodedContent(values);
-            var response = client.PostAsync("http://localhost:8080/send_message", content).Result;
+            var response = client.PostAsync("/send_message", content).Result;
             return response.ToString();
         }
 
@@ -37,7 +46,7 @@ namespace Messenger
 
             var content = new FormUrlEncodedContent(values);
 
-            var response = await client.PostAsync("http://localhost:8080/send_message", content);
+            var response = await client.PostAsync("/send_message", content);
 
             var responseString = await response.Content.ReadAsStringAsync();
 
@@ -53,7 +62,7 @@ namespace Messenger
             };
 
             var content = new FormUrlEncodedContent(values);
-            var response = client.PostAsync("http://localhost:8080/get_messages", content).Result;
+            var response = client.PostAsync("/get_messages", content).Result;
             return response.ToString();
         }
 
@@ -68,7 +77,7 @@ namespace Messenger
 
             var content = new FormUrlEncodedContent(values);
 
-            var response = await client.PostAsync("http://localhost:8080/get_messages", content);
+            var response = await client.PostAsync("/get_messages", content);
 
             var responseString = await response.Content.ReadAsStringAsync();
 
@@ -86,7 +95,7 @@ namespace Messenger
             };
 
             var content = new FormUrlEncodedContent(values);
-            var response = client.PostAsync("http://localhost:8080/delete_messages", content).Result;
+            var response = client.PostAsync("/delete_messages", content).Result;
             return response.ToString();
         }
 
@@ -101,7 +110,7 @@ namespace Messenger
 
             var content = new FormUrlEncodedContent(values);
 
-            var response = await client.PostAsync("http://localhost:8080/delete_messages", content);
+            var response = await client.PostAsync("/delete_messages", content);
 
             var responseString = await response.Content.ReadAsStringAsync();
 
