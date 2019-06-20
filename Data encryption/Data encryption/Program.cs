@@ -10,7 +10,19 @@ namespace Data_encryption
 	{
 		static void Main(string[] args)
 		{
-			string erere = "";
+			string erere = "Hello";
+
+			Console.WriteLine(erere);
+			Tuple<byte[], byte[], string> x = DataEncryption.EncryptMessage(erere, erere);
+			Console.WriteLine(x.Item2);
+
+			string y = DataEncryption.DecryptMessage(x.Item3, x.Item1, x.Item2, erere);
+			Console.WriteLine(y);
+
+			y = Console.ReadLine();
+
+
+			/*
 			int i = 0;
 			while (i < 30)
 			{
@@ -30,7 +42,7 @@ namespace Data_encryption
 			string y = DataEncryption.Decrypt(x, privateKey);
 			Console.WriteLine(y);
 
-			x = Console.ReadLine();
+			x = Console.ReadLine();*/
 		}
 	}
 }
