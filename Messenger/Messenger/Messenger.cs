@@ -256,5 +256,16 @@ namespace Messenger
 				this.message_TextBox.Text = "";
 			}
 		}
+
+
+		private void Option_PictureBox_MouseMove(object sender, MouseEventArgs e)
+		{
+			this.option_PictureBox.Image = global::Messenger.Properties.Resources.Option_hover_;
+		}
+
+		private void Option_PictureBox_MouseLeave(object sender, EventArgs e)
+		{
+			this.option_PictureBox.Image = global::Messenger.Properties.Resources.Option;
+		}
 	}
 }

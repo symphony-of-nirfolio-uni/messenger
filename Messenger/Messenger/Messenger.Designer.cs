@@ -33,6 +33,7 @@ namespace Messenger
 		{
 			this.main_SplitContainer = new System.Windows.Forms.SplitContainer();
 			this.control_SplitContainer = new System.Windows.Forms.SplitContainer();
+			this.option_PictureBox = new System.Windows.Forms.PictureBox();
 			this.listOfChat_FlowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
 			this.chat_SplitContainer = new System.Windows.Forms.SplitContainer();
 			this.messages_SplitContainer = new System.Windows.Forms.SplitContainer();
@@ -43,8 +44,10 @@ namespace Messenger
 			this.main_SplitContainer.Panel2.SuspendLayout();
 			this.main_SplitContainer.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.control_SplitContainer)).BeginInit();
+			this.control_SplitContainer.Panel1.SuspendLayout();
 			this.control_SplitContainer.Panel2.SuspendLayout();
 			this.control_SplitContainer.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.option_PictureBox)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.chat_SplitContainer)).BeginInit();
 			this.chat_SplitContainer.Panel2.SuspendLayout();
 			this.chat_SplitContainer.SuspendLayout();
@@ -87,12 +90,27 @@ namespace Messenger
 			this.control_SplitContainer.Name = "control_SplitContainer";
 			this.control_SplitContainer.Orientation = System.Windows.Forms.Orientation.Horizontal;
 			// 
+			// control_SplitContainer.Panel1
+			// 
+			this.control_SplitContainer.Panel1.Controls.Add(this.option_PictureBox);
+			// 
 			// control_SplitContainer.Panel2
 			// 
 			this.control_SplitContainer.Panel2.Controls.Add(this.listOfChat_FlowLayoutPanel);
 			this.control_SplitContainer.Size = new System.Drawing.Size(266, 500);
 			this.control_SplitContainer.SplitterDistance = 70;
 			this.control_SplitContainer.TabIndex = 0;
+			// 
+			// option_PictureBox
+			// 
+			this.option_PictureBox.Image = global::Messenger.Properties.Resources.Option;
+			this.option_PictureBox.Location = new System.Drawing.Point(12, 12);
+			this.option_PictureBox.Name = "option_PictureBox";
+			this.option_PictureBox.Size = new System.Drawing.Size(48, 48);
+			this.option_PictureBox.TabIndex = 0;
+			this.option_PictureBox.TabStop = false;
+			this.option_PictureBox.MouseMove += new MouseEventHandler(this.Option_PictureBox_MouseMove);
+			this.option_PictureBox.MouseLeave += new EventHandler(this.Option_PictureBox_MouseLeave);
 			// 
 			// listOfChat_FlowLayoutPanel
 			// 
@@ -196,9 +214,11 @@ namespace Messenger
 			this.main_SplitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.main_SplitContainer)).EndInit();
 			this.main_SplitContainer.ResumeLayout(false);
+			this.control_SplitContainer.Panel1.ResumeLayout(false);
 			this.control_SplitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.control_SplitContainer)).EndInit();
 			this.control_SplitContainer.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.option_PictureBox)).EndInit();
 			this.chat_SplitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.chat_SplitContainer)).EndInit();
 			this.chat_SplitContainer.ResumeLayout(false);
@@ -220,6 +240,7 @@ namespace Messenger
 		private System.Windows.Forms.SplitContainer messages_SplitContainer;
 		private System.Windows.Forms.TextBox message_TextBox;
 		private System.Windows.Forms.FlowLayoutPanel chat_FlowLayoutPanel;
+		private PictureBox option_PictureBox;
 	}
 }
 
