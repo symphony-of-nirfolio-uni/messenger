@@ -243,7 +243,7 @@ namespace Messenger
 		{
 			if (e.KeyCode == Keys.Enter && e.Modifiers != Keys.Shift && e.Modifiers != Keys.Control && this.message_TextBox.Text != "")
 			{
-				AddMessage(this.message_TextBox.Text, DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString(), false);
+				AddMessage(this.message_TextBox.Text, DateTime.Now.Hour.ToString() + ":" + (DateTime.Now.Minute < 10 ? "0" : DateTime.Now.Minute.ToString()), false);
 				this.needClearMessageTextBox = true;
 				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
 			}
