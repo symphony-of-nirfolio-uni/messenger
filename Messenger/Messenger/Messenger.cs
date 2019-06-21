@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
 using Data_encryption;
 
@@ -34,6 +35,9 @@ namespace Messenger
 		private string privateKey;
 		private string publicKey;
 
+		private bool needWork;
+
+		private Thread checkMailThread;
 		private bool firstStart;
 
 		public Messenger()
@@ -51,6 +55,8 @@ namespace Messenger
 
 			this.privateKey = "";
 			this.publicKey = "";
+
+			this.needWork = true;
 		}
 
 
@@ -230,6 +236,26 @@ namespace Messenger
 		}
 		
 
+		public static void CheckMail(object messenger)
+		{
+			HttpRequests httpRequests = new HttpRequests();
+			while (true)
+			{
+				string newMessage = httpRequests.GetMessages("fd", "noname");
+				httpRequests.DeleteMessages("fd", "noname");
+
+				//if (newMessage != "[]")
+				//{
+				//	MessageBox.Show(newMessage);
+				//}
+			}
+		}
+
+		public void SetNewMessage(string text, string time)
+		{
+			MessageBox.Show(text);
+		}
+
 		private void Messenger_Load(object sender, EventArgs e)
 		{
 			CreateOption_Panel();
@@ -258,12 +284,21 @@ namespace Messenger
 				this.Controls.Add(generateKeys_button);
 			}
 
+			this.checkMailThread = new Thread(new ParameterizedThreadStart(CheckMail));
+			this.checkMailThread.Start(this);
+
 			for (int i = 0; i < 7; ++i)
 			{
 				AddChat("Something " + i.ToString(), i.ToString(), "6:53 PM");
 			}
 			
 			this.message_TextBox.Select();
+		}
+
+
+		private void Messenger_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			this.checkMailThread.Abort();
 		}
 
 		private void GenerateKeys_button_Click(object sender, EventArgs e)
@@ -617,5 +652,6 @@ namespace Messenger
 				EnableControls(control.Parent);
 			}
 		}
+		
 	}
 }

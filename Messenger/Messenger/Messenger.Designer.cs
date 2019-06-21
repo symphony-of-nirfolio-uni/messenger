@@ -212,6 +212,7 @@ namespace Messenger
 			this.Text = "Messenger";
 			this.Load += new System.EventHandler(this.Messenger_Load);
 			this.Click += new System.EventHandler(this.Messenger_Click);
+			this.FormClosed += new FormClosedEventHandler(this.Messenger_FormClosed);
 			this.main_SplitContainer.Panel1.ResumeLayout(false);
 			this.main_SplitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.main_SplitContainer)).EndInit();
