@@ -21,6 +21,7 @@ namespace Messenger
 		private string userName;
 		private string chatID = "";
 		private Panel selectChat;
+		private bool needUndolastChar;
 
 		private bool optionIsOpen;
 		private Panel option_Panel;
@@ -53,6 +54,8 @@ namespace Messenger
 
 			this.privateKey = "";
 			this.publicKey = "";
+
+			this.needUndolastChar = false;
 		}
 
 
@@ -150,10 +153,10 @@ namespace Messenger
 				ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224))))),
 				Location = new System.Drawing.Point(10, 90),
 				Name = "id_TextBox",
-				Size = new System.Drawing.Size(200, 20),
+				Multiline = true,
+				Size = new System.Drawing.Size(200, 300),
 				TabIndex = 0,
-				MaxLength = 40,
-				WordWrap = false
+				MaxLength = 40
 			};
 
 			Button create_Button = new Button
@@ -162,7 +165,7 @@ namespace Messenger
 				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
 				Name = "newChat_Button",
 				Text = "Create",
-				Location = new Point(10, 130),
+				Location = new Point(10, 430),
 				Size = new Size(200, 40)
 			};
 			create_Button.Click += new EventHandler(this.Create_Button_Click);
@@ -559,15 +562,18 @@ namespace Messenger
 		{
 			if (e.KeyCode == Keys.Enter && e.Modifiers != Keys.Shift && e.Modifiers != Keys.Control && this.message_TextBox.Text != "")
 			{
-				AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), false, false);
-				this.needClearMessageTextBox = true;
-				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
-			}
-			else if (e.KeyCode == Keys.J && this.message_TextBox.Text != "")
-			{
-				AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), true, false);
-				this.needClearMessageTextBox = true;
-				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
+				if (this.selectChat == null)
+				{
+					MessageBox.Show("Choose some chat", "Write message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					this.needUndolastChar = true;
+				}
+				else
+				{
+					AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), false, false);
+
+					this.needClearMessageTextBox = true;
+					UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
+				}
 			}
 		}
 
@@ -577,6 +583,11 @@ namespace Messenger
 			{
 				this.needClearMessageTextBox = false;
 				this.message_TextBox.Text = "";
+			}
+			else if (this.needUndolastChar)
+			{
+				this.needUndolastChar = false;
+				//TODO:
 			}
 		}
 
