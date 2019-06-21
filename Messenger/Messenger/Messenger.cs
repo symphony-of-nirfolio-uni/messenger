@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
+using Newtonsoft.Json;
 
 using Data_encryption;
 
@@ -21,6 +22,21 @@ namespace Messenger
 		private string userName;
 		private string chatID = "";
 		private Panel selectChat;
+		public string PublicKeyBySelectChat
+		{
+			get
+			{
+				if (selectChat != null)
+				{
+					return selectChat.Controls[5].Text;
+				}
+				else
+				{
+					return "";
+				}
+			}
+		}
+
 		private bool needUndolastChar;
 
 		private bool optionIsOpen;
@@ -35,6 +51,8 @@ namespace Messenger
 		private TextBox publicKey_TextBox;
 		private string privateKey;
 		private string publicKey;
+
+		public string PublicKey { get => publicKey; }
 
 		private Thread checkMailThread;
 		private bool firstStart;
@@ -155,8 +173,7 @@ namespace Messenger
 				Name = "id_TextBox",
 				Multiline = true,
 				Size = new System.Drawing.Size(200, 300),
-				TabIndex = 0,
-				MaxLength = 40
+				TabIndex = 0
 			};
 
 			Button create_Button = new Button
@@ -233,22 +250,46 @@ namespace Messenger
 				this.userName = ((TextBox)sender).Text;
 			}
 		}
-		
+
+
+		public class MessageForJson
+		{
+			public string sender { get; set; }
+			public string receeiver { get; set; }
+			public string message { get; set; }
+		}
+
+		public class RootObjectForJson
+		{
+			public List<MessageForJson> messages { get; set; }
+		}
+
+		public static RootObjectForJson GetMessageByJson(string text)
+		{
+			return JsonConvert.DeserializeObject<RootObjectForJson>(text);
+		}
 
 		public static void CheckMail(object messenger)
 		{
 			HttpRequests httpRequests = new HttpRequests();
 			while (true)
 			{
-				string newMessage = httpRequests.GetMessages("fd", "noname");
-				httpRequests.DeleteMessages("fd", "noname");
+				if (((Messenger)messenger).PublicKeyBySelectChat != "")
+				{
+					string newMessage = httpRequests.GetMessages(((Messenger)messenger).PublicKeyBySelectChat, ((Messenger)messenger).PublicKey);
+					httpRequests.DeleteMessages(((Messenger)messenger).PublicKeyBySelectChat, ((Messenger)messenger).PublicKey);
 
-				Thread.Sleep(1000);
+					if (newMessage != "[]")
+					{
+						foreach (MessageForJson messageForJson in GetMessageByJson(newMessage).messages)
+						{
+							((Messenger)messenger).SetNewMessage(messageForJson.message, GetCurrentTimeForMessage());
+						}
+						MessageBox.Show(newMessage);
+					}
 
-				//if (newMessage != "[]")
-				//{
-				//	MessageBox.Show(newMessage);
-				//}
+					Thread.Sleep(1000);
+				}
 			}
 		}
 
@@ -496,13 +537,14 @@ namespace Messenger
 			{
 				string newMessage = DataEncryption.EncryptMessage(text, this.selectChat.Controls[5].Text);
 
-				this.httpRequests.SendMessage(this.userName, this.selectChat.Controls[6].Text, newMessage);
+				this.httpRequests.SendMessage(this.publicKey, this.selectChat.Controls[5].Text, newMessage);
+				//this.httpRequests.SendMessage(this.userName, this.selectChat.Controls[6].Text, newMessage);
 			}
 			this.ResumeLayout();
 		}
 
 
-		private string GetCurrentTimeForMessage()
+		public static string GetCurrentTimeForMessage()
 		{
 			return DateTime.Now.Hour.ToString() + ":" + (DateTime.Now.Minute < 10 ? "0" : DateTime.Now.Minute.ToString());
 		}
