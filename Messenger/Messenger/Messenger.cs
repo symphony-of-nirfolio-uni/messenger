@@ -7,6 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
+using System.Timers;
+using System.Windows;
+using Newtonsoft.Json;
 
 using Data_encryption;
 
@@ -19,6 +23,23 @@ namespace Messenger
 		private HttpRequests httpRequests;
 		private string userName;
 		private string chatID = "";
+		private Panel selectChat;
+		public string PublicKeyBySelectChat
+		{
+			get
+			{
+				if (selectChat != null)
+				{
+					return selectChat.Controls[5].Text;
+				}
+				else
+				{
+					return "";
+				}
+			}
+		}
+
+		private bool needUndolastChar;
 
 		private bool optionIsOpen;
 		private Panel option_Panel;
@@ -29,11 +50,20 @@ namespace Messenger
 		private bool getPublickeyIsOpen;
 		private Panel getPublickey_panel;
 
+		private bool changeDomainIsOpen;
+		private Panel changeDomain_panel;
+
 		private TextBox publicKey_TextBox;
 		private string privateKey;
+		public string PrivateKey { get => privateKey; }
 		private string publicKey;
-
+		public string PublicKey { get => publicKey; }
+		
 		private bool firstStart;
+
+		private System.Timers.Timer checkMailTimer;
+
+		private delegate void SafeCallDelegate(Panel lineMessage_Panel);
 
 		public Messenger()
 		{
@@ -42,14 +72,54 @@ namespace Messenger
 			this.needClearMessageTextBox = false;
 			this.httpRequests = new HttpRequests();
 			this.userName = "noname";
+			this.chatID = "";
 
 			this.optionIsOpen = false;
 			this.newChatIsOpen = false;
 			this.getPublickeyIsOpen = false;
+			this.changeDomainIsOpen = false;
 			this.firstStart = true;
 
 			this.privateKey = "";
 			this.publicKey = "";
+
+			this.needUndolastChar = false;
+		}
+
+		private void Messenger_Load(object sender, EventArgs e)
+		{
+			CreateOption_Panel();
+			CreateNewChat_Panel();
+			CreateGetPublickey_Panel();
+			CreateChangeDomain_Panel();
+
+			//loading settings
+			//TODO:
+			this.firstStart = true;
+
+			if (this.firstStart)
+			{
+				this.Controls.Remove(this.main_SplitContainer);
+
+				Button generateKeys_button = new Button
+				{
+					Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+					BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+					Name = "generateKeys_button",
+					Text = "Generate profile, private and public keys",
+					Location = new Point(this.Width / 2 - 100, this.Height / 2 - 50),
+					Size = new Size(200, 100)
+				};
+				generateKeys_button.Click += new EventHandler(this.GenerateKeys_button_Click);
+
+				this.Controls.Add(generateKeys_button);
+			}
+
+			this.main_SplitContainer.Panel2.Controls.Remove(this.chat_SplitContainer);
+
+			SetCheckMail();
+
+			this.message_TextBox.Select();
 		}
 
 
@@ -97,11 +167,22 @@ namespace Messenger
 				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
 				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
 				Name = "getPublicKey_Button",
-				Text = "Create new chat",
+				Text = "Get public key",
 				Location = new Point(10, 150),
 				Size = new Size(200, 40)
 			};
 			getPublicKey_Button.Click += new EventHandler(this.GetPublicKey_Button_Click);
+			
+			Button changeDomain_Button = new Button
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Name = "changeDomain_Button",
+				Text = "Change domain",
+				Location = new Point(10, 200),
+				Size = new Size(200, 40)
+			};
+			changeDomain_Button.Click += new EventHandler(this.ChangeDomain_Button_Click);
 
 			userName_TextBox.TextChanged += new EventHandler(this.UserName_TextChanged);
 			userName_TextBox.LostFocus += new EventHandler(this.UserName_TextBox_LostFocus);
@@ -109,6 +190,7 @@ namespace Messenger
 			this.option_Panel.Controls.Add(userName_TextBox);
 			this.option_Panel.Controls.Add(newChat_Button);
 			this.option_Panel.Controls.Add(getPublicKey_Button);
+			this.option_Panel.Controls.Add(changeDomain_Button);
 		}
 
 		private void CreateNewChat_Panel()
@@ -147,10 +229,9 @@ namespace Messenger
 				ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224))))),
 				Location = new System.Drawing.Point(10, 90),
 				Name = "id_TextBox",
-				Size = new System.Drawing.Size(200, 20),
-				TabIndex = 0,
-				MaxLength = 40,
-				WordWrap = false
+				Multiline = true,
+				Size = new System.Drawing.Size(200, 300),
+				TabIndex = 0
 			};
 
 			Button create_Button = new Button
@@ -159,7 +240,7 @@ namespace Messenger
 				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
 				Name = "newChat_Button",
 				Text = "Create",
-				Location = new Point(10, 130),
+				Location = new Point(10, 430),
 				Size = new Size(200, 40)
 			};
 			create_Button.Click += new EventHandler(this.Create_Button_Click);
@@ -200,15 +281,76 @@ namespace Messenger
 			this.getPublickey_panel.Controls.Add(publicKey_TextBox);
 		}
 
-
-		private void Create_Button_Click(object sender, EventArgs e)
+		private void CreateChangeDomain_Panel()
 		{
-			this.chatID = ((Button)sender).Parent.Controls[0].Text;
+			this.changeDomain_panel = new Panel
+			{
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Anchor = ((AnchorStyles)((AnchorStyles.Top | AnchorStyles.Left))),
+				AutoSize = true,
+				Location = new Point(0, 0),
+				Name = "changeDomain_panel",
+				Size = new Size(250, this.Height)
+			};
 
-			AddChat(((Button)sender).Parent.Controls[1].Text, this.chatID, GetCurrentTimeForMessage());
+			TextBox name_TextBox = new TextBox
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle,
+				Font = new System.Drawing.Font("Microsoft Sans Serif", 12F),
+				ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224))))),
+				Location = new System.Drawing.Point(10, 60),
+				Name = "name_TextBox",
+				Size = new System.Drawing.Size(200, 20),
+				TabIndex = 0,
+				MaxLength = 40,
+				WordWrap = false
+			};
+
+			Button add_Button = new Button
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Name = "newChat_Button",
+				Text = "Change domain",
+				Location = new Point(10, 100),
+				Size = new Size(200, 40)
+			};
+			add_Button.Click += new EventHandler(this.Add_Button_Click);
+			
+			this.changeDomain_panel.Controls.Add(name_TextBox);
+			this.changeDomain_panel.Controls.Add(add_Button);
+		}
+
+		private void Add_Button_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				httpRequests.ChangeDomain(((Button)sender).Parent.Controls[0].Text);
+			}
+			catch
+			{
+				MessageBox.Show("Network error", "Network error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 
 			CloseOptions();
 		}
+
+		private void Create_Button_Click(object sender, EventArgs e)
+		{
+			if (((Button)sender).Parent.Controls[0].Text != "")
+			{
+				AddChat(((Button)sender).Parent.Controls[1].Text, DataEncryption.GeneratePrivateKey(), ((Button)sender).Parent.Controls[0].Text, ((Button)sender).Parent.Controls[1].Text, GetCurrentTimeForMessage());
+
+				CloseOptions();
+			}
+			else
+			{
+				MessageBox.Show("Field cannot be empty", "Create chat", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
 
 
 		private void UserName_TextBox_LostFocus(object sender, EventArgs e)
@@ -227,56 +369,77 @@ namespace Messenger
 				this.userName = ((TextBox)sender).Text;
 			}
 		}
-		
 
-		private void Messenger_Load(object sender, EventArgs e)
+
+		public class MessageForJson
 		{
-			CreateOption_Panel();
-			CreateNewChat_Panel();
-			CreateGetPublickey_Panel();
-
-			//loading settings
-			//TODO:
-			this.firstStart = true;
-
-			if (this.firstStart)
-			{
-				this.Controls.Remove(this.main_SplitContainer);
-
-				Button generateKeys_button = new Button
-				{
-					Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
-					BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
-					Name = "generateKeys_button",
-					Text = "Generate profile, private and public keys",
-					Location = new Point(this.Width / 2 - 100, this.Height / 2 - 50),
-					Size = new Size(200, 100)
-				};
-				generateKeys_button.Click += new EventHandler(this.GenerateKeys_button_Click);
-
-				this.Controls.Add(generateKeys_button);
-			}
-
-			for (int i = 0; i < 7; ++i)
-			{
-				AddChat("Something " + i.ToString(), i.ToString(), "6:53 PM");
-			}
-			
-			this.message_TextBox.Select();
+			public string sender { get; set; }
+			public string receeiver { get; set; }
+			public string message { get; set; }
 		}
 
+		public class RootObjectForJson
+		{
+			public List<MessageForJson> messages { get; set; }
+		}
+
+		private static RootObjectForJson GetMessageByJson(string text)
+		{
+			return JsonConvert.DeserializeObject<RootObjectForJson>(text);
+		}
+
+		private void SetCheckMail()
+		{
+			checkMailTimer = new System.Timers.Timer(1000);
+
+			checkMailTimer.Elapsed += CheckMail;
+			checkMailTimer.AutoReset = true;
+			checkMailTimer.Enabled = true;
+		}
+
+		private void CheckMail(Object source, ElapsedEventArgs e)
+		{
+			if (PublicKeyBySelectChat != "")
+			{
+				string newMessage;
+				try
+				{
+					newMessage = httpRequests.GetMessages(PublicKeyBySelectChat, PublicKey);
+
+					if (newMessage != "{\"messages\": []}")
+					{
+						httpRequests.DeleteMessages(PublicKeyBySelectChat, PublicKey);
+						foreach (MessageForJson messageForJson in GetMessageByJson(newMessage).messages)
+						{
+							SetNewMessage(DataEncryption.DecryptMessage(messageForJson.message, PrivateKey), GetCurrentTimeForMessage());
+						}
+					}
+				}
+				catch
+				{
+					MessageBox.Show("Network error", "Network error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+			}
+		}
+
+		private void SetNewMessage(string text, string time)
+		{
+			AddMessage(text, time, true, true);
+		}
+
+		
 		private void GenerateKeys_button_Click(object sender, EventArgs e)
 		{
 			//TODO:
-			this.privateKey = DataEncryption.generatePrivateKey();
-			this.publicKey = DataEncryption.generatePublicKey(this.privateKey);
+			this.privateKey = DataEncryption.GeneratePrivateKey();
+			this.publicKey = DataEncryption.GeneratePublicKey(this.privateKey);
 			this.publicKey_TextBox.Text = this.publicKey;
 
 			this.Controls.Clear();
 			this.Controls.Add(main_SplitContainer);
 		}
 
-		private void AddChat(string name, string id, string time)
+		private void AddChat(string name, string id, string publicKey, string chatName, string time)
 		{
 			PictureBox icon_PictureBox = new System.Windows.Forms.PictureBox
 			{
@@ -332,6 +495,28 @@ namespace Messenger
 				Visible = false
 			};
 
+			Label publicKey_Label = new System.Windows.Forms.Label
+			{
+				AutoSize = true,
+				Location = new System.Drawing.Point(0, 0),
+				Name = "publicKey_Label",
+				Size = new System.Drawing.Size(50, 13),
+				TabIndex = 3,
+				Text = publicKey,
+				Visible = false
+			};
+
+			Label nameChat_Label = new System.Windows.Forms.Label
+			{
+				AutoSize = true,
+				Location = new System.Drawing.Point(0, 0),
+				Name = "nameChat_Label",
+				Size = new System.Drawing.Size(50, 13),
+				TabIndex = 3,
+				Text = chatName,
+				Visible = false
+			};
+
 			Panel chat_Panel = new Panel
 			{
 				BackColor = System.Drawing.Color.Gray,
@@ -340,18 +525,37 @@ namespace Messenger
 				Size = new System.Drawing.Size(listOfChat_FlowLayoutPanel.ClientSize.Width - 7, 58),
 				TabIndex = 0
 			};
-			chat_Panel.Controls.Add(id_Label);
-			chat_Panel.Controls.Add(name_Label);
-			chat_Panel.Controls.Add(time_Label);
-			chat_Panel.Controls.Add(Message_Label);
-			chat_Panel.Controls.Add(icon_PictureBox);
+			chat_Panel.Controls.Add(id_Label);			//0
+			chat_Panel.Controls.Add(name_Label);		//1
+			chat_Panel.Controls.Add(time_Label);		//2
+			chat_Panel.Controls.Add(Message_Label);		//3
+			chat_Panel.Controls.Add(icon_PictureBox);   //4
+			chat_Panel.Controls.Add(publicKey_Label);   //5
+			chat_Panel.Controls.Add(nameChat_Label);	//6
 
 			chat_Panel.Click += new EventHandler(this.CreateChat);
 
 			this.listOfChat_FlowLayoutPanel.Controls.Add(chat_Panel);
+			this.listOfChat_FlowLayoutPanel.Controls.SetChildIndex(chat_Panel, 0);
 		}
 
-		private void AddMessage(string text, string time, bool forUser = true)
+		private void AddMessageSafe(Panel lineMessage_Panel)
+		{
+			if (this.chat_FlowLayoutPanel.InvokeRequired)
+			{
+				var del = new SafeCallDelegate(AddMessageSafe);
+				Invoke(del, new object[] { lineMessage_Panel });
+			}
+			else
+			{
+				this.chat_FlowLayoutPanel.Controls.Add(lineMessage_Panel);
+				this.chat_FlowLayoutPanel.Controls.SetChildIndex(lineMessage_Panel, 0);
+				this.chat_FlowLayoutPanel.AutoScrollPosition = new Point(22, 100000);
+				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
+			}
+		}
+
+		private void AddMessage(string text, string time, bool forUser = true, bool isLoad = true)
 		{
 			Size messageBlock_Size = TextRenderer.MeasureText(text, new System.Drawing.Font("Microsoft Sans Serif", 10F), new Size(100, 20), TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
 			messageBlock_Size.Height += 8;
@@ -416,50 +620,95 @@ namespace Messenger
 			message_Panel.Controls.Add(messageBlock_TextBox);
 			message_Panel.Controls.Add(time_Label);
 			message_Panel.Controls.Add(status_PictureBox);
-
 			
 			lineMessage_Panel.Controls.Add(message_Panel);
+			
+			if (!isLoad)
+			{
+				try
+				{
+					string newMessage = DataEncryption.EncryptMessage(text, this.selectChat.Controls[5].Text);
+					try
+					{
+						this.httpRequests.SendMessage(this.publicKey, this.selectChat.Controls[5].Text, newMessage);
 
-			this.chat_FlowLayoutPanel.Controls.Add(lineMessage_Panel);
-			this.chat_FlowLayoutPanel.Controls.SetChildIndex(lineMessage_Panel, 0);
-			this.chat_FlowLayoutPanel.AutoScrollPosition = new Point(22, 100000);
-			UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
+						this.SuspendLayout();
+						AddMessageSafe(lineMessage_Panel);
+						if (this.selectChat != null && !isLoad)
+						{
+							this.listOfChat_FlowLayoutPanel.Controls.SetChildIndex(this.selectChat, 0);
+							this.selectChat.Controls[3].Text = text;
+						}
+						this.ResumeLayout();
+					}
+					catch
+					{
+						MessageBox.Show("Network error", "Send message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+				}
+				catch
+				{
+					MessageBox.Show("Encryption error", "Send message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+			}
+			else
+			{
+				this.SuspendLayout();
 
-			this.httpRequests.SendMessage(this.userName, "someone", text);
+				AddMessageSafe(lineMessage_Panel);
+				if (this.selectChat != null && !isLoad)
+				{
+					this.listOfChat_FlowLayoutPanel.Controls.SetChildIndex(this.selectChat, 0);
+					this.selectChat.Controls[3].Text = text;
+				}
+				this.ResumeLayout();
+			}
+
 		}
 
 
-		private string GetCurrentTimeForMessage()
+		public static string GetCurrentTimeForMessage()
 		{
 			return DateTime.Now.Hour.ToString() + ":" + (DateTime.Now.Minute < 10 ? "0" : DateTime.Now.Minute.ToString());
 		}
 
 		private void NewChat_Button_Click(object sender, EventArgs e)
 		{
+			CreateNewChat_Panel();
 			OpenOption(ref this.newChatIsOpen, this.newChat_Panel);
 		}
 		
 		private void GetPublicKey_Button_Click(object sender, EventArgs e)
 		{
+			CreateGetPublickey_Panel();
 			OpenOption(ref this.getPublickeyIsOpen, this.getPublickey_panel);
 		}
 
+		private void ChangeDomain_Button_Click(object sender, EventArgs e)
+		{
+			CreateChangeDomain_Panel();
+			OpenOption(ref this.changeDomainIsOpen, this.changeDomain_panel);
+		}
 
+		//Chat part
 		private void LoadChat(string id)
 		{
-			for (int i = 0; i < 7; ++i)
-			{
-				AddMessage("Something " + i.ToString(), "6:53 PM");
-			}
+			this.message_TextBox.Text = "";
 
 			this.message_TextBox.Select();
 		}
 		
 		private void CreateChat(object sender, EventArgs e)
 		{
-			if (((Panel)sender).Controls[0].Text != chatID)
+			if (this.chatID == "")
 			{
-				chatID = ((Panel)sender).Controls[0].Text;
+				this.main_SplitContainer.Panel2.Controls.Add(this.chat_SplitContainer);
+			}
+			if (((Panel)sender).Controls[0].Text != this.chatID)
+			{
+				this.selectChat = (Panel)sender;
+				this.chatID = ((Panel)sender).Controls[0].Text;
+				this.companion_Label.Text = this.selectChat.Controls[1].Text;
 
 				this.chat_FlowLayoutPanel.Controls.Clear();
 
@@ -488,15 +737,18 @@ namespace Messenger
 		{
 			if (e.KeyCode == Keys.Enter && e.Modifiers != Keys.Shift && e.Modifiers != Keys.Control && this.message_TextBox.Text != "")
 			{
-				AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), false);
-				this.needClearMessageTextBox = true;
-				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
-			}
-			else if (e.KeyCode == Keys.J && this.message_TextBox.Text != "")
-			{
-				AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), true);
-				this.needClearMessageTextBox = true;
-				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
+				if (this.selectChat == null)
+				{
+					MessageBox.Show("Choose some chat", "Write message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					this.needUndolastChar = true;
+				}
+				else
+				{
+					AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), false, false);
+
+					this.needClearMessageTextBox = true;
+					UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
+				}
 			}
 		}
 
@@ -506,6 +758,11 @@ namespace Messenger
 			{
 				this.needClearMessageTextBox = false;
 				this.message_TextBox.Text = "";
+			}
+			else if (this.needUndolastChar)
+			{
+				this.needUndolastChar = false;
+				//TODO:
 			}
 		}
 
@@ -542,6 +799,7 @@ namespace Messenger
 			this.optionIsOpen = true;
 			this.newChatIsOpen = true;
 			this.getPublickeyIsOpen = true;
+			this.changeDomainIsOpen = true;
 
 			EnableAllControls(this);
 			if (this.Controls.Contains(this.option_Panel))
@@ -556,16 +814,29 @@ namespace Messenger
 			{
 				this.Controls.Remove(this.getPublickey_panel);
 			}
+			if (this.Controls.Contains(this.changeDomain_panel))
+			{
+				this.Controls.Remove(this.changeDomain_panel);
+			}
 		}
 
 		private void Messenger_Click(object sender, EventArgs e)
 		{
-			if (this.optionIsOpen || this.newChatIsOpen || this.getPublickeyIsOpen)
+			if (this.optionIsOpen || this.newChatIsOpen || this.getPublickeyIsOpen || this.changeDomainIsOpen)
 			{
 				if (!((((MouseEventArgs)e).Location.X <= this.option_Panel.Size.Width && ((MouseEventArgs)e).Location.Y <= this.option_Panel.Height)))
 				{
 					CloseOptions();
 				}
+			}
+		}
+
+		private void Messenger_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (this.getPublickeyIsOpen && e.KeyCode == Keys.A && e.Modifiers == Keys.Control)
+			{
+				((TextBox)this.getPublickey_panel.Controls[0]).SelectAll();
+				((TextBox)this.getPublickey_panel.Controls[0]).Focus();
 			}
 		}
 
@@ -605,5 +876,6 @@ namespace Messenger
 				EnableControls(control.Parent);
 			}
 		}
+		
 	}
 }

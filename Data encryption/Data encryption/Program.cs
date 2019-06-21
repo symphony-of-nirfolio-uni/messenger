@@ -10,27 +10,18 @@ namespace Data_encryption
 	{
 		static void Main(string[] args)
 		{
-			string erere = "";
-			int i = 0;
-			while (i < 30)
-			{
-				erere += i.ToString();
-				++i;
-			}
-			Console.WriteLine(erere.Length);
-			Console.WriteLine('\n');
-			string privateKey = DataEncryption.generatePrivateKey();
-			string publicKey = DataEncryption.generatePublicKey(privateKey);
-			
-			Console.WriteLine(privateKey);
-			Console.WriteLine(publicKey);
+			string erere = "Hello my dear friend. 2323 ";
 			Console.WriteLine(erere);
-			string x = DataEncryption.Encrypt(erere, publicKey);
-			Console.WriteLine(x);
-			string y = DataEncryption.Decrypt(x, privateKey);
-			Console.WriteLine(y);
+			string privateKey = DataEncryption.GeneratePrivateKey();
+			string publicKey = DataEncryption.GeneratePublicKey(privateKey);
+			string x1 = DataEncryption.EncryptMessage(erere, publicKey);
+			Console.WriteLine(x1);
 
-			x = Console.ReadLine();
+			string y1 = DataEncryption.DecryptMessage(x1, privateKey);
+			Console.WriteLine(y1);
+
+			y1 = Console.ReadLine();
+
 		}
 	}
 }

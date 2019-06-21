@@ -39,6 +39,7 @@ namespace Messenger
 			this.messages_SplitContainer = new System.Windows.Forms.SplitContainer();
 			this.chat_FlowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
 			this.message_TextBox = new System.Windows.Forms.TextBox();
+			this.companion_Label = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.main_SplitContainer)).BeginInit();
 			this.main_SplitContainer.Panel1.SuspendLayout();
 			this.main_SplitContainer.Panel2.SuspendLayout();
@@ -49,6 +50,7 @@ namespace Messenger
 			this.control_SplitContainer.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.option_PictureBox)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.chat_SplitContainer)).BeginInit();
+			this.chat_SplitContainer.Panel1.SuspendLayout();
 			this.chat_SplitContainer.Panel2.SuspendLayout();
 			this.chat_SplitContainer.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.messages_SplitContainer)).BeginInit();
@@ -138,6 +140,7 @@ namespace Messenger
 			// chat_SplitContainer.Panel1
 			// 
 			this.chat_SplitContainer.Panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(25)))));
+			this.chat_SplitContainer.Panel1.Controls.Add(this.companion_Label);
 			// 
 			// chat_SplitContainer.Panel2
 			// 
@@ -198,6 +201,15 @@ namespace Messenger
 			this.message_TextBox.TextChanged += new System.EventHandler(this.Message_TextBox_TextChanged);
 			this.message_TextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Message_TextBox_KeyDown);
 			// 
+			// companion_Label
+			// 
+			this.companion_Label.AutoSize = true;
+			this.companion_Label.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.companion_Label.Location = new System.Drawing.Point(147, 21);
+			this.companion_Label.Name = "companion_Label";
+			this.companion_Label.Size = new System.Drawing.Size(0, 29);
+			this.companion_Label.TabIndex = 0;
+			// 
 			// Messenger
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -212,6 +224,7 @@ namespace Messenger
 			this.Text = "Messenger";
 			this.Load += new System.EventHandler(this.Messenger_Load);
 			this.Click += new System.EventHandler(this.Messenger_Click);
+			this.KeyDown += new KeyEventHandler(this.Messenger_KeyDown);
 			this.main_SplitContainer.Panel1.ResumeLayout(false);
 			this.main_SplitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.main_SplitContainer)).EndInit();
@@ -221,6 +234,8 @@ namespace Messenger
 			((System.ComponentModel.ISupportInitialize)(this.control_SplitContainer)).EndInit();
 			this.control_SplitContainer.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.option_PictureBox)).EndInit();
+			this.chat_SplitContainer.Panel1.ResumeLayout(false);
+			this.chat_SplitContainer.Panel1.PerformLayout();
 			this.chat_SplitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.chat_SplitContainer)).EndInit();
 			this.chat_SplitContainer.ResumeLayout(false);
@@ -243,6 +258,7 @@ namespace Messenger
 		private System.Windows.Forms.TextBox message_TextBox;
 		private System.Windows.Forms.FlowLayoutPanel chat_FlowLayoutPanel;
 		private PictureBox option_PictureBox;
+		private Label companion_Label;
 	}
 }
 

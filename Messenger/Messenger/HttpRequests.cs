@@ -20,7 +20,18 @@ namespace Messenger
             this.client = new HttpClient {BaseAddress = new Uri(url)};
         }
 
-        public string SendMessage(string sender, string receiver, string message)
+		public void ChangeDomain(string url)
+		{
+			client.BaseAddress = new Uri(url);
+		}
+
+		public string GetDomain()
+		{
+			return client.BaseAddress.ToString().Remove(client.BaseAddress.ToString().Length - 1);
+		}
+
+
+		public string SendMessage(string sender, string receiver, string message)
         {
             var values = new Dictionary<string, string>
             {
@@ -63,7 +74,7 @@ namespace Messenger
 
             var content = new FormUrlEncodedContent(values);
             var response = client.PostAsync("/get_messages", content).Result;
-            return response.ToString();
+            return response.Content.ReadAsStringAsync().Result; ;
         }
 
         public async Task<string> GetMessagesAsync(string sender, string receiver)
@@ -96,7 +107,7 @@ namespace Messenger
 
             var content = new FormUrlEncodedContent(values);
             var response = client.PostAsync("/delete_messages", content).Result;
-            return response.ToString();
+            return response.Content.ReadAsStringAsync().Result;
         }
 
         public async Task<string> DeleteMessagesAsync(string sender, string receiver)
