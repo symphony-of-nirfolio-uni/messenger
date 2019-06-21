@@ -427,12 +427,7 @@ namespace Messenger
 			AddMessage(text, time, true, true);
 		}
 
-
-		private void Messenger_FormClosed(object sender, FormClosedEventArgs e)
-		{
-
-		}
-
+		
 		private void GenerateKeys_button_Click(object sender, EventArgs e)
 		{
 			//TODO:
@@ -835,7 +830,16 @@ namespace Messenger
 				}
 			}
 		}
-		
+
+		private void Messenger_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (this.getPublickeyIsOpen && e.KeyCode == Keys.A && e.Modifiers == Keys.Control)
+			{
+				((TextBox)this.getPublickey_panel.Controls[0]).SelectAll();
+				((TextBox)this.getPublickey_panel.Controls[0]).Focus();
+			}
+		}
+
 		//Enable and Disable Controls
 		private void DisableAllControls(Control control)
 		{
