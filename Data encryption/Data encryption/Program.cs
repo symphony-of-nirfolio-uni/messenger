@@ -21,10 +21,12 @@ namespace Data_encryption
 			Console.WriteLine(y);
 
 			Console.WriteLine("ewrotyi9ierow0ri9turieowp");*/
-			string x1 = DataEncryption.EncryptMessage(erere, erere);
+			string privateKey = DataEncryption.generatePrivateKey();
+			string publicKey = DataEncryption.generatePublicKey(privateKey);
+			string x1 = DataEncryption.EncryptMessage(erere, publicKey);
 			Console.WriteLine(x1);
 
-			string y1 = DataEncryption.DecryptMessage(x1, erere);
+			string y1 = DataEncryption.DecryptMessage(x1, privateKey);
 			Console.WriteLine(y1);
 
 			y1 = Console.ReadLine();

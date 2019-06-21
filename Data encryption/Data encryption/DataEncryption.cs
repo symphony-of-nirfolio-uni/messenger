@@ -92,8 +92,8 @@ namespace Data_encryption
 				string encryptedMessage = EncryptAES(data, aesManager.Key, aesManager.IV);
 				string tempKey = ConvertToString(aesManager.Key);
 				string tempIV = ConvertToString(aesManager.IV);
-				cipherText = "<MESSAGE_CAT>" + encryptedMessage + "</MESSAGE_CAT>" +
-					"<KEY_CAT>" + tempKey + "</KEY_CAT>" + tempIV;
+				string cipherKeys = Encrypt(tempKey + "<Fluffy_Cat>" + tempIV, publicKey);
+				cipherText = encryptedMessage + "<Symphony-Of-Nirfolio>" + cipherKeys; 
 			}
 			return cipherText;
 		}
@@ -137,19 +137,11 @@ namespace Data_encryption
 			return ConvertToString(encrypted);
 		}
 
-		private static string ParseBackValues(string data,ref string key,ref string IV)
+		private static string ParseBackValues(string data, ref string keys)
 		{
-			string cipher = null;
-
-			int tempIV = data.IndexOf("</KEY_CAT>");
-			IV = data.Substring(tempIV + 10);
-			int tempKey = data.IndexOf("<KEY_CAT>");
-			key = data.Substring(tempKey + 9, tempIV - tempKey - 9);
-			int messageStart = data.IndexOf("<MESSAGE_CAT>");
-			int messageEnd = data.IndexOf("</MESSAGE_CAT>");
-
-			cipher = data.Substring(messageStart + 13, messageEnd-messageStart-13);
-			return cipher;
+			int separator = data.IndexOf("<Symphony-Of-Nirfolio>");
+			keys = data.Substring(separator + ("<Symphony-Of-Nirfolio>").Length);
+			return data.Substring(0, separator);
 		}
 
 		private static byte[] ConvertToByte(string value)
@@ -162,16 +154,26 @@ namespace Data_encryption
 			return dataByte;
 		}
 
+		private static void ParseKeys(string value, string key, string IV)
+		{
+			int separator = value.IndexOf("<Fluffy_Cat>");
+			key = value.Substring(0, separator);
+			IV = value.Substring(separator + ("<Fluffy_Cat>").Length);
+		}
+
 		public static string DecryptMessage(string data, string privateKey)
 		{
 			string decryptedMessage = null;
 			using (AesManaged aesManager = new AesManaged())
 			{
+				string cipherKeys = null;
+				string cipherText = ParseBackValues(data, ref cipherKeys);
+				string keys = Decrypt(cipherKeys, privateKey);
 				string tempKey = null, tempIV = null;
-				string cipher = ParseBackValues(data,ref tempKey,ref tempIV);
+				ParseKeys(keys, tempKey, tempIV);
 				aesManager.Key = ConvertToByte(tempKey);
 				aesManager.IV = ConvertToByte(tempIV);
-				decryptedMessage = DecryptAES(cipher, aesManager.Key, aesManager.IV);
+				decryptedMessage = DecryptAES(cipherText, aesManager.Key, aesManager.IV);
 			}
 			return decryptedMessage;
 		}
