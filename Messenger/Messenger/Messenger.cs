@@ -340,7 +340,7 @@ namespace Messenger
 			{
 				this.chatID = ((Button)sender).Parent.Controls[0].Text;
 
-				AddChat(((Button)sender).Parent.Controls[1].Text, "34", ((Button)sender).Parent.Controls[0].Text, ((Button)sender).Parent.Controls[1].Text, GetCurrentTimeForMessage());
+				AddChat(((Button)sender).Parent.Controls[1].Text, DataEncryption.GeneratePrivateKey(), ((Button)sender).Parent.Controls[0].Text, ((Button)sender).Parent.Controls[1].Text, GetCurrentTimeForMessage());
 
 				CloseOptions();
 			}
@@ -435,8 +435,8 @@ namespace Messenger
 		private void GenerateKeys_button_Click(object sender, EventArgs e)
 		{
 			//TODO:
-			this.privateKey = DataEncryption.generatePrivateKey();
-			this.publicKey = DataEncryption.generatePublicKey(this.privateKey);
+			this.privateKey = DataEncryption.GeneratePrivateKey();
+			this.publicKey = DataEncryption.GeneratePublicKey(this.privateKey);
 			this.publicKey_TextBox.Text = this.publicKey;
 
 			this.Controls.Clear();
@@ -540,6 +540,7 @@ namespace Messenger
 			chat_Panel.Click += new EventHandler(this.CreateChat);
 
 			this.listOfChat_FlowLayoutPanel.Controls.Add(chat_Panel);
+			this.listOfChat_FlowLayoutPanel.Controls.SetChildIndex(chat_Panel, 0);
 		}
 
 		private void AddMessageSafe(Panel lineMessage_Panel)
@@ -693,7 +694,7 @@ namespace Messenger
 			OpenOption(ref this.changeDomainIsOpen, this.changeDomain_panel);
 		}
 
-
+		//Chat part
 		private void LoadChat(string id)
 		{
 			this.message_TextBox.Text = "";
@@ -707,6 +708,7 @@ namespace Messenger
 			{
 				this.selectChat = (Panel)sender;
 				this.chatID = ((Panel)sender).Controls[0].Text;
+				this.companion_Label.Text = this.selectChat.Controls[1].Text;
 
 				this.chat_FlowLayoutPanel.Controls.Clear();
 
