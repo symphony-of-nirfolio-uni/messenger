@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
+using System.Timers;
+using System.Windows;
 using Newtonsoft.Json;
 
 using Data_encryption;
@@ -50,12 +52,15 @@ namespace Messenger
 
 		private TextBox publicKey_TextBox;
 		private string privateKey;
+		public string PrivateKey { get => privateKey; }
 		private string publicKey;
-
 		public string PublicKey { get => publicKey; }
-
-		private Thread checkMailThread;
+		
 		private bool firstStart;
+
+		private System.Timers.Timer checkMailTimer;
+
+		private delegate void SafeCallDelegate(Panel lineMessage_Panel);
 
 		public Messenger()
 		{
@@ -264,38 +269,40 @@ namespace Messenger
 			public List<MessageForJson> messages { get; set; }
 		}
 
-		public static RootObjectForJson GetMessageByJson(string text)
+		private static RootObjectForJson GetMessageByJson(string text)
 		{
 			return JsonConvert.DeserializeObject<RootObjectForJson>(text);
 		}
 
-		public static void CheckMail(object messenger)
+		private void SetCheckMail()
 		{
-			HttpRequests httpRequests = new HttpRequests();
-			while (true)
+			checkMailTimer = new System.Timers.Timer(1000);
+
+			checkMailTimer.Elapsed += CheckMail;
+			checkMailTimer.AutoReset = true;
+			checkMailTimer.Enabled = true;
+		}
+
+		private void CheckMail(Object source, ElapsedEventArgs e)
+		{
+			if (PublicKeyBySelectChat != "")
 			{
-				if (((Messenger)messenger).PublicKeyBySelectChat != "")
+				string newMessage = httpRequests.GetMessages(PublicKeyBySelectChat, PublicKey);
+				httpRequests.DeleteMessages(PublicKeyBySelectChat, PublicKey);
+
+				if (newMessage != "{\"messages\": []}")
 				{
-					string newMessage = httpRequests.GetMessages(((Messenger)messenger).PublicKeyBySelectChat, ((Messenger)messenger).PublicKey);
-					httpRequests.DeleteMessages(((Messenger)messenger).PublicKeyBySelectChat, ((Messenger)messenger).PublicKey);
-
-					if (newMessage != "[]")
+					foreach (MessageForJson messageForJson in GetMessageByJson(newMessage).messages)
 					{
-						foreach (MessageForJson messageForJson in GetMessageByJson(newMessage).messages)
-						{
-							((Messenger)messenger).SetNewMessage(messageForJson.message, GetCurrentTimeForMessage());
-						}
-						MessageBox.Show(newMessage);
+						SetNewMessage(DataEncryption.DecryptMessage(messageForJson.message, PrivateKey), GetCurrentTimeForMessage());
 					}
-
-					Thread.Sleep(1000);
 				}
 			}
 		}
 
-		public void SetNewMessage(string text, string time)
+		private void SetNewMessage(string text, string time)
 		{
-			MessageBox.Show(text);
+			AddMessage(text, time, true, true);
 		}
 
 		private void Messenger_Load(object sender, EventArgs e)
@@ -326,8 +333,8 @@ namespace Messenger
 				this.Controls.Add(generateKeys_button);
 			}
 
-			this.checkMailThread = new Thread(new ParameterizedThreadStart(CheckMail));
-			this.checkMailThread.Start(this);
+			SetCheckMail();
+			
 
 			for (int i = 0; i < 7; ++i)
 			{
@@ -340,7 +347,7 @@ namespace Messenger
 
 		private void Messenger_FormClosed(object sender, FormClosedEventArgs e)
 		{
-			this.checkMailThread.Abort();
+
 		}
 
 		private void GenerateKeys_button_Click(object sender, EventArgs e)
@@ -453,6 +460,22 @@ namespace Messenger
 			this.listOfChat_FlowLayoutPanel.Controls.Add(chat_Panel);
 		}
 
+		private void AddMessageSafe(Panel lineMessage_Panel)
+		{
+			if (this.chat_FlowLayoutPanel.InvokeRequired)
+			{
+				var del = new SafeCallDelegate(AddMessageSafe);
+				Invoke(del, new object[] { lineMessage_Panel });
+			}
+			else
+			{
+				this.chat_FlowLayoutPanel.Controls.Add(lineMessage_Panel);
+				this.chat_FlowLayoutPanel.Controls.SetChildIndex(lineMessage_Panel, 0);
+				this.chat_FlowLayoutPanel.AutoScrollPosition = new Point(22, 100000);
+				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
+			}
+		}
+
 		private void AddMessage(string text, string time, bool forUser = true, bool isLoad = true)
 		{
 			Size messageBlock_Size = TextRenderer.MeasureText(text, new System.Drawing.Font("Microsoft Sans Serif", 10F), new Size(100, 20), TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
@@ -522,10 +545,8 @@ namespace Messenger
 			lineMessage_Panel.Controls.Add(message_Panel);
 
 			this.SuspendLayout();
-			this.chat_FlowLayoutPanel.Controls.Add(lineMessage_Panel);
-			this.chat_FlowLayoutPanel.Controls.SetChildIndex(lineMessage_Panel, 0);
-			this.chat_FlowLayoutPanel.AutoScrollPosition = new Point(22, 100000);
-			UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
+
+			AddMessageSafe(lineMessage_Panel);
 
 			if (this.selectChat != null && !isLoad)
 			{
@@ -540,6 +561,7 @@ namespace Messenger
 				this.httpRequests.SendMessage(this.publicKey, this.selectChat.Controls[5].Text, newMessage);
 				//this.httpRequests.SendMessage(this.userName, this.selectChat.Controls[6].Text, newMessage);
 			}
+
 			this.ResumeLayout();
 		}
 
@@ -559,7 +581,7 @@ namespace Messenger
 			OpenOption(ref this.getPublickeyIsOpen, this.getPublickey_panel);
 		}
 
-
+		
 		private void LoadChat(string id)
 		{
 			for (int i = 0; i < 7; ++i)
@@ -692,7 +714,7 @@ namespace Messenger
 				}
 			}
 		}
-
+		
 		//Enable and Disable Controls
 		private void DisableAllControls(Control control)
 		{
