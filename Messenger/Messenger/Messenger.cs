@@ -835,7 +835,16 @@ namespace Messenger
 				}
 			}
 		}
-		
+
+		private void Messenger_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (this.getPublickeyIsOpen && e.KeyCode == Keys.A && e.Modifiers == Keys.Control)
+			{
+				((TextBox)this.getPublickey_panel.Controls[0]).SelectAll();
+				((TextBox)this.getPublickey_panel.Controls[0]).Focus();
+			}
+		}
+
 		//Enable and Disable Controls
 		private void DisableAllControls(Control control)
 		{

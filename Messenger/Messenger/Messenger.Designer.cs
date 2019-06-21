@@ -225,6 +225,7 @@ namespace Messenger
 			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Messenger_FormClosed);
 			this.Load += new System.EventHandler(this.Messenger_Load);
 			this.Click += new System.EventHandler(this.Messenger_Click);
+			this.KeyDown += new KeyEventHandler(this.Messenger_KeyDown);
 			this.main_SplitContainer.Panel1.ResumeLayout(false);
 			this.main_SplitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.main_SplitContainer)).EndInit();
