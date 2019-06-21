@@ -322,25 +322,35 @@ namespace Messenger
 
 		private void Add_Button_Click(object sender, EventArgs e)
 		{
-			httpRequests.ChangeDomain(((Button)sender).Parent.Controls[0].Text);
+			try
+			{
+				httpRequests.ChangeDomain(((Button)sender).Parent.Controls[0].Text);
+			}
+			catch
+			{
+				MessageBox.Show("Network error", "Network error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 
 			CloseOptions();
 		}
 
 		private void Create_Button_Click(object sender, EventArgs e)
 		{
-			this.chatID = ((Button)sender).Parent.Controls[0].Text;
+			if (((Button)sender).Parent.Controls[0].Text != "")
+			{
+				this.chatID = ((Button)sender).Parent.Controls[0].Text;
 
-			AddChat(((Button)sender).Parent.Controls[1].Text, "34", ((Button)sender).Parent.Controls[0].Text, ((Button)sender).Parent.Controls[1].Text, GetCurrentTimeForMessage());
+				AddChat(((Button)sender).Parent.Controls[1].Text, "34", ((Button)sender).Parent.Controls[0].Text, ((Button)sender).Parent.Controls[1].Text, GetCurrentTimeForMessage());
 
-			CloseOptions();
+				CloseOptions();
+			}
+			else
+			{
+				MessageBox.Show("Field cannot be empty", "Create chat", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 
 
-		private void ChangeDomain_Button_Click(object sender, EventArgs e)
-		{
-			OpenOption(ref this.changeDomainIsOpen, this.changeDomain_panel);
-		}
 
 		private void UserName_TextBox_LostFocus(object sender, EventArgs e)
 		{
@@ -390,15 +400,23 @@ namespace Messenger
 		{
 			if (PublicKeyBySelectChat != "")
 			{
-				string newMessage = httpRequests.GetMessages(PublicKeyBySelectChat, PublicKey);
-				httpRequests.DeleteMessages(PublicKeyBySelectChat, PublicKey);
-
-				if (newMessage != "{\"messages\": []}")
+				string newMessage;
+				try
 				{
-					foreach (MessageForJson messageForJson in GetMessageByJson(newMessage).messages)
+					newMessage = httpRequests.GetMessages(PublicKeyBySelectChat, PublicKey);
+
+					if (newMessage != "{\"messages\": []}")
 					{
-						SetNewMessage(DataEncryption.DecryptMessage(messageForJson.message, PrivateKey), GetCurrentTimeForMessage());
+						httpRequests.DeleteMessages(PublicKeyBySelectChat, PublicKey);
+						foreach (MessageForJson messageForJson in GetMessageByJson(newMessage).messages)
+						{
+							SetNewMessage(DataEncryption.DecryptMessage(messageForJson.message, PrivateKey), GetCurrentTimeForMessage());
+						}
 					}
+				}
+				catch
+				{
+					MessageBox.Show("Network error", "Network error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 			}
 		}
@@ -607,26 +625,48 @@ namespace Messenger
 			message_Panel.Controls.Add(status_PictureBox);
 			
 			lineMessage_Panel.Controls.Add(message_Panel);
-
-			this.SuspendLayout();
-
-			AddMessageSafe(lineMessage_Panel);
-
-			if (this.selectChat != null && !isLoad)
-			{
-				this.listOfChat_FlowLayoutPanel.Controls.SetChildIndex(this.selectChat, 0);
-				this.selectChat.Controls[3].Text = text;
-			}
-
+			
 			if (!isLoad)
 			{
-				string newMessage = DataEncryption.EncryptMessage(text, this.selectChat.Controls[5].Text);
+				try
+				{
+					string newMessage = DataEncryption.EncryptMessage(text, this.selectChat.Controls[5].Text);
+					try
+					{
+						this.httpRequests.SendMessage(this.publicKey, this.selectChat.Controls[5].Text, newMessage);
 
-				this.httpRequests.SendMessage(this.publicKey, this.selectChat.Controls[5].Text, newMessage);
-				//this.httpRequests.SendMessage(this.userName, this.selectChat.Controls[6].Text, newMessage);
+						this.SuspendLayout();
+						AddMessageSafe(lineMessage_Panel);
+						if (this.selectChat != null && !isLoad)
+						{
+							this.listOfChat_FlowLayoutPanel.Controls.SetChildIndex(this.selectChat, 0);
+							this.selectChat.Controls[3].Text = text;
+						}
+						this.ResumeLayout();
+					}
+					catch
+					{
+						MessageBox.Show("Network error", "Send message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+				}
+				catch
+				{
+					MessageBox.Show("Encryption error", "Send message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+			}
+			else
+			{
+				this.SuspendLayout();
+
+				AddMessageSafe(lineMessage_Panel);
+				if (this.selectChat != null && !isLoad)
+				{
+					this.listOfChat_FlowLayoutPanel.Controls.SetChildIndex(this.selectChat, 0);
+					this.selectChat.Controls[3].Text = text;
+				}
+				this.ResumeLayout();
 			}
 
-			this.ResumeLayout();
 		}
 
 
@@ -637,15 +677,23 @@ namespace Messenger
 
 		private void NewChat_Button_Click(object sender, EventArgs e)
 		{
+			CreateNewChat_Panel();
 			OpenOption(ref this.newChatIsOpen, this.newChat_Panel);
 		}
 		
 		private void GetPublicKey_Button_Click(object sender, EventArgs e)
 		{
+			CreateGetPublickey_Panel();
 			OpenOption(ref this.getPublickeyIsOpen, this.getPublickey_panel);
 		}
 
-		
+		private void ChangeDomain_Button_Click(object sender, EventArgs e)
+		{
+			CreateChangeDomain_Panel();
+			OpenOption(ref this.changeDomainIsOpen, this.changeDomain_panel);
+		}
+
+
 		private void LoadChat(string id)
 		{
 			this.message_TextBox.Text = "";
