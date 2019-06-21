@@ -13,21 +13,32 @@ namespace Data_encryption
 	{
 		///RSA ALGO
 
-		//generate private key
+		//generate private key (starts from small letter)
 		public static string generatePrivateKey()
+		{
+			return GeneratePrivateKey();
+		}
+
+		//generate private key (normal)
+		public static string GeneratePrivateKey()
 		{
 			var RSA = new RSACryptoServiceProvider();
 			return RSA.ToXmlString(true);
 		}
 
-		//generate public key over private key
+		//generate public key over private key (starts from small letter)
 		public static string generatePublicKey(string privateKey)
+		{
+			return GeneratePublicKey(privateKey);
+		}
+
+		//generate public key over private key (normal)
+		public static string GeneratePublicKey(string privateKey)
 		{
 			var RSA = new RSACryptoServiceProvider();
 			RSA.FromXmlString(privateKey);
 			return RSA.ToXmlString(false);
 		}
-
 		//decrypt data by asymmetric algo (private key required)
 		private static string Decrypt(string data, string privateKey)
 		{

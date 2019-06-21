@@ -12,8 +12,8 @@ namespace Data_encryption
 		{
 			string erere = "Hello my dear friend. 2323 ";
 			Console.WriteLine(erere);
-			string privateKey = DataEncryption.generatePrivateKey();
-			string publicKey = DataEncryption.generatePublicKey(privateKey);
+			string privateKey = DataEncryption.GeneratePrivateKey();
+			string publicKey = DataEncryption.GeneratePublicKey(privateKey);
 			string x1 = DataEncryption.EncryptMessage(erere, publicKey);
 			Console.WriteLine(x1);
 
