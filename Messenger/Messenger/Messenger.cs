@@ -72,6 +72,7 @@ namespace Messenger
 			this.needClearMessageTextBox = false;
 			this.httpRequests = new HttpRequests();
 			this.userName = "noname";
+			this.chatID = "";
 
 			this.optionIsOpen = false;
 			this.newChatIsOpen = false;
@@ -113,6 +114,8 @@ namespace Messenger
 
 				this.Controls.Add(generateKeys_button);
 			}
+
+			this.main_SplitContainer.Panel2.Controls.Remove(this.chat_SplitContainer);
 
 			SetCheckMail();
 
@@ -338,8 +341,6 @@ namespace Messenger
 		{
 			if (((Button)sender).Parent.Controls[0].Text != "")
 			{
-				this.chatID = ((Button)sender).Parent.Controls[0].Text;
-
 				AddChat(((Button)sender).Parent.Controls[1].Text, DataEncryption.GeneratePrivateKey(), ((Button)sender).Parent.Controls[0].Text, ((Button)sender).Parent.Controls[1].Text, GetCurrentTimeForMessage());
 
 				CloseOptions();
@@ -704,6 +705,10 @@ namespace Messenger
 		
 		private void CreateChat(object sender, EventArgs e)
 		{
+			if (this.chatID == "")
+			{
+				this.main_SplitContainer.Panel2.Controls.Add(this.chat_SplitContainer);
+			}
 			if (((Panel)sender).Controls[0].Text != this.chatID)
 			{
 				this.selectChat = (Panel)sender;
