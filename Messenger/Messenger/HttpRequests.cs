@@ -63,7 +63,7 @@ namespace Messenger
 
             var content = new FormUrlEncodedContent(values);
             var response = client.PostAsync("/get_messages", content).Result;
-            return response.ToString();
+            return response.Content.ReadAsStringAsync().Result; ;
         }
 
         public async Task<string> GetMessagesAsync(string sender, string receiver)
@@ -96,7 +96,7 @@ namespace Messenger
 
             var content = new FormUrlEncodedContent(values);
             var response = client.PostAsync("/delete_messages", content).Result;
-            return response.ToString();
+            return response.Content.ReadAsStringAsync().Result;
         }
 
         public async Task<string> DeleteMessagesAsync(string sender, string receiver)
