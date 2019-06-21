@@ -13,23 +13,11 @@ namespace Data_encryption
 	{
 		///RSA ALGO
 
-		//generate private key (starts from small letter)
-		public static string generatePrivateKey()
-		{
-			return GeneratePrivateKey();
-		}
-
 		//generate private key (normal)
 		public static string GeneratePrivateKey()
 		{
 			var RSA = new RSACryptoServiceProvider();
 			return RSA.ToXmlString(true);
-		}
-
-		//generate public key over private key (starts from small letter)
-		public static string generatePublicKey(string privateKey)
-		{
-			return GeneratePublicKey(privateKey);
 		}
 
 		//generate public key over private key (normal)
