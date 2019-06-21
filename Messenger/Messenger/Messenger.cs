@@ -50,6 +50,9 @@ namespace Messenger
 		private bool getPublickeyIsOpen;
 		private Panel getPublickey_panel;
 
+		private bool changeDomainIsOpen;
+		private Panel changeDomain_panel;
+
 		private TextBox publicKey_TextBox;
 		private string privateKey;
 		public string PrivateKey { get => privateKey; }
@@ -73,12 +76,47 @@ namespace Messenger
 			this.optionIsOpen = false;
 			this.newChatIsOpen = false;
 			this.getPublickeyIsOpen = false;
+			this.changeDomainIsOpen = false;
 			this.firstStart = true;
 
 			this.privateKey = "";
 			this.publicKey = "";
 
 			this.needUndolastChar = false;
+		}
+
+		private void Messenger_Load(object sender, EventArgs e)
+		{
+			CreateOption_Panel();
+			CreateNewChat_Panel();
+			CreateGetPublickey_Panel();
+			CreateChangeDomain_Panel();
+
+			//loading settings
+			//TODO:
+			this.firstStart = true;
+
+			if (this.firstStart)
+			{
+				this.Controls.Remove(this.main_SplitContainer);
+
+				Button generateKeys_button = new Button
+				{
+					Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+					BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+					Name = "generateKeys_button",
+					Text = "Generate profile, private and public keys",
+					Location = new Point(this.Width / 2 - 100, this.Height / 2 - 50),
+					Size = new Size(200, 100)
+				};
+				generateKeys_button.Click += new EventHandler(this.GenerateKeys_button_Click);
+
+				this.Controls.Add(generateKeys_button);
+			}
+
+			SetCheckMail();
+
+			this.message_TextBox.Select();
 		}
 
 
@@ -126,11 +164,22 @@ namespace Messenger
 				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
 				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
 				Name = "getPublicKey_Button",
-				Text = "Create new chat",
+				Text = "Get public key",
 				Location = new Point(10, 150),
 				Size = new Size(200, 40)
 			};
 			getPublicKey_Button.Click += new EventHandler(this.GetPublicKey_Button_Click);
+			
+			Button changeDomain_Button = new Button
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Name = "changeDomain_Button",
+				Text = "Change domain",
+				Location = new Point(10, 200),
+				Size = new Size(200, 40)
+			};
+			changeDomain_Button.Click += new EventHandler(this.ChangeDomain_Button_Click);
 
 			userName_TextBox.TextChanged += new EventHandler(this.UserName_TextChanged);
 			userName_TextBox.LostFocus += new EventHandler(this.UserName_TextBox_LostFocus);
@@ -138,6 +187,7 @@ namespace Messenger
 			this.option_Panel.Controls.Add(userName_TextBox);
 			this.option_Panel.Controls.Add(newChat_Button);
 			this.option_Panel.Controls.Add(getPublicKey_Button);
+			this.option_Panel.Controls.Add(changeDomain_Button);
 		}
 
 		private void CreateNewChat_Panel()
@@ -228,6 +278,54 @@ namespace Messenger
 			this.getPublickey_panel.Controls.Add(publicKey_TextBox);
 		}
 
+		private void CreateChangeDomain_Panel()
+		{
+			this.changeDomain_panel = new Panel
+			{
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Anchor = ((AnchorStyles)((AnchorStyles.Top | AnchorStyles.Left))),
+				AutoSize = true,
+				Location = new Point(0, 0),
+				Name = "changeDomain_panel",
+				Size = new Size(250, this.Height)
+			};
+
+			TextBox name_TextBox = new TextBox
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle,
+				Font = new System.Drawing.Font("Microsoft Sans Serif", 12F),
+				ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224))))),
+				Location = new System.Drawing.Point(10, 60),
+				Name = "name_TextBox",
+				Size = new System.Drawing.Size(200, 20),
+				TabIndex = 0,
+				MaxLength = 40,
+				WordWrap = false
+			};
+
+			Button add_Button = new Button
+			{
+				Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
+				BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
+				Name = "newChat_Button",
+				Text = "Change domain",
+				Location = new Point(10, 100),
+				Size = new Size(200, 40)
+			};
+			add_Button.Click += new EventHandler(this.Add_Button_Click);
+			
+			this.changeDomain_panel.Controls.Add(name_TextBox);
+			this.changeDomain_panel.Controls.Add(add_Button);
+		}
+
+		private void Add_Button_Click(object sender, EventArgs e)
+		{
+			httpRequests.ChangeDomain(((Button)sender).Parent.Controls[0].Text);
+
+			CloseOptions();
+		}
 
 		private void Create_Button_Click(object sender, EventArgs e)
 		{
@@ -238,6 +336,11 @@ namespace Messenger
 			CloseOptions();
 		}
 
+
+		private void ChangeDomain_Button_Click(object sender, EventArgs e)
+		{
+			OpenOption(ref this.changeDomainIsOpen, this.changeDomain_panel);
+		}
 
 		private void UserName_TextBox_LostFocus(object sender, EventArgs e)
 		{
@@ -303,45 +406,6 @@ namespace Messenger
 		private void SetNewMessage(string text, string time)
 		{
 			AddMessage(text, time, true, true);
-		}
-
-		private void Messenger_Load(object sender, EventArgs e)
-		{
-			CreateOption_Panel();
-			CreateNewChat_Panel();
-			CreateGetPublickey_Panel();
-
-			//loading settings
-			//TODO:
-			this.firstStart = true;
-
-			if (this.firstStart)
-			{
-				this.Controls.Remove(this.main_SplitContainer);
-
-				Button generateKeys_button = new Button
-				{
-					Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)))),
-					BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31))))),
-					Name = "generateKeys_button",
-					Text = "Generate profile, private and public keys",
-					Location = new Point(this.Width / 2 - 100, this.Height / 2 - 50),
-					Size = new Size(200, 100)
-				};
-				generateKeys_button.Click += new EventHandler(this.GenerateKeys_button_Click);
-
-				this.Controls.Add(generateKeys_button);
-			}
-
-			SetCheckMail();
-			
-
-			for (int i = 0; i < 7; ++i)
-			{
-				AddChat("Something " + i.ToString(), i.ToString(), DataEncryption.GeneratePublicKey(DataEncryption.GeneratePrivateKey()), i.ToString(), "6:53 PM");
-			}
-			
-			this.message_TextBox.Select();
 		}
 
 
@@ -584,10 +648,7 @@ namespace Messenger
 		
 		private void LoadChat(string id)
 		{
-			for (int i = 0; i < 7; ++i)
-			{
-				AddMessage("Something " + i.ToString(), "6:53 PM");
-			}
+			this.message_TextBox.Text = "";
 
 			this.message_TextBox.Select();
 		}
@@ -688,6 +749,7 @@ namespace Messenger
 			this.optionIsOpen = true;
 			this.newChatIsOpen = true;
 			this.getPublickeyIsOpen = true;
+			this.changeDomainIsOpen = true;
 
 			EnableAllControls(this);
 			if (this.Controls.Contains(this.option_Panel))
@@ -702,11 +764,15 @@ namespace Messenger
 			{
 				this.Controls.Remove(this.getPublickey_panel);
 			}
+			if (this.Controls.Contains(this.changeDomain_panel))
+			{
+				this.Controls.Remove(this.changeDomain_panel);
+			}
 		}
 
 		private void Messenger_Click(object sender, EventArgs e)
 		{
-			if (this.optionIsOpen || this.newChatIsOpen || this.getPublickeyIsOpen)
+			if (this.optionIsOpen || this.newChatIsOpen || this.getPublickeyIsOpen || this.changeDomainIsOpen)
 			{
 				if (!((((MouseEventArgs)e).Location.X <= this.option_Panel.Size.Width && ((MouseEventArgs)e).Location.Y <= this.option_Panel.Height)))
 				{
