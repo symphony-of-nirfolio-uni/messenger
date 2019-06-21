@@ -68,10 +68,37 @@ namespace Data_encryption
 
 
 		/// AES ALGO
-		
-		//public static Tuple<string, string> EncryptMessage2(string data,)
+		private static string ConvertToString(byte[] value)
+		{
+			var length = value.Count();
+			var item = 0;
+			var ans = new StringBuilder();
+			foreach (var x in value)
+			{
+				item++;
+				ans.Append(x);
+				if (item < length)
+					ans.Append(",");
+			}
 
+			return ans.ToString();
+		}
 
+		public static string EncryptMessage(string data, string publicKey)
+		{
+			string cipherText = null;
+			using (AesManaged aesManager = new AesManaged())
+			{
+				string encryptedMessage = EncryptAES(data, aesManager.Key, aesManager.IV);
+				string tempKey = ConvertToString(aesManager.Key);
+				string tempIV = ConvertToString(aesManager.IV);
+				cipherText = "<MESSAGE_CAT>" + encryptedMessage + "</MESSAGE_CAT>" +
+					"<KEY_CAT>" + tempKey + "</KEY_CAT>" + tempIV;
+			}
+			return cipherText;
+		}
+
+		/*
 		public static Tuple<byte[], byte[], string> EncryptMessage(string data, string publicKey)
 		{
 			string tempKey = "";
@@ -82,89 +109,100 @@ namespace Data_encryption
 			Console.WriteLine(encryptedMessage);
 			return new Tuple<byte[], byte[], string>(AESmanager.Key, AESmanager.IV, encryptedMessage);
 		}	
+		*/
 
 		private static string EncryptAES(string data, byte[] Key, byte[] IV)
 		{
 			byte[] encrypted;
 
-			// Create an AesManaged object
-			// with the specified key and IV.
 			using (AesManaged aesAlg = new AesManaged())
 			{
 				aesAlg.Key = Key;
 				aesAlg.IV = IV;
 
-				// Create an encryptor to perform the stream transform.
 				ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
 
-				// Create the streams used for encryption.
 				using (MemoryStream msEncrypt = new MemoryStream())
 				{
 					using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
 					{
 						using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
 						{
-							//Write all data to the stream.
 							swEncrypt.Write(data);
 						}
 						encrypted = msEncrypt.ToArray();
 					}
 				}
 			}
-
-
-			// Return the encrypted bytes from the memory stream.
-			var length = encrypted.Count();
-			var item = 0;
-			var sb = new StringBuilder();
-
-			foreach (var x in encrypted)
-			{
-				item++;
-				sb.Append(x);
-				if (item < length)
-					sb.Append(",");
-			}
-			return sb.ToString();
+			return ConvertToString(encrypted);
 		}
 
+		private static string ParseBackValues(string data,ref string key,ref string IV)
+		{
+			string cipher = null;
+
+			int tempIV = data.IndexOf("</KEY_CAT>");
+			IV = data.Substring(tempIV + 10);
+			int tempKey = data.IndexOf("<KEY_CAT>");
+			key = data.Substring(tempKey + 9, tempIV - tempKey - 9);
+			int messageStart = data.IndexOf("<MESSAGE_CAT>");
+			int messageEnd = data.IndexOf("</MESSAGE_CAT>");
+
+			cipher = data.Substring(messageStart + 13, messageEnd-messageStart-13);
+			return cipher;
+		}
+
+		private static byte[] ConvertToByte(string value)
+		{
+			var dataArray = value.Split(new char[] { ',' });
+			byte[] dataByte = new byte[dataArray.Length];
+
+			for (int i = 0; i < dataArray.Length; i++)
+				dataByte[i] = Convert.ToByte(dataArray[i]);
+			return dataByte;
+		}
+
+		public static string DecryptMessage(string data, string privateKey)
+		{
+			string decryptedMessage = null;
+			using (AesManaged aesManager = new AesManaged())
+			{
+				string tempKey = null, tempIV = null;
+				string cipher = ParseBackValues(data,ref tempKey,ref tempIV);
+				aesManager.Key = ConvertToByte(tempKey);
+				aesManager.IV = ConvertToByte(tempIV);
+				decryptedMessage = DecryptAES(cipher, aesManager.Key, aesManager.IV);
+			}
+			return decryptedMessage;
+		}
+
+		/*
 		public static string DecryptMessage(string data, byte[] tempKey, byte[] IV, string privateKey)
 		{
 			string decryptedMessage = DecryptAES(data, tempKey, IV);
 
 			return decryptedMessage;
 		}
+		*/
 
 		private static string DecryptAES(string data, byte[] key, byte[] IV)
 		{
-			var dataArray = data.Split(new char[] { ',' });
-			byte[] dataByte = new byte[dataArray.Length];
-
-			for (int i = 0; i < dataArray.Length; i++)
-				dataByte[i] = Convert.ToByte(dataArray[i]);
+			byte[] dataByte = ConvertToByte(data);
 
 			string plaintext = null;
 
-			// Create an AesManaged object
-			// with the specified key and IV.
 			using (AesManaged aesAlg = new AesManaged())
 			{
 				aesAlg.Key = key;
 				aesAlg.IV = IV;
-
-				// Create a decryptor to perform the stream transform.
 				ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
 
-				// Create the streams used for decryption.
 				using (MemoryStream msDecrypt = new MemoryStream(dataByte))
 				{
 					using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
 					{
 						using (StreamReader srDecrypt = new StreamReader(csDecrypt))
 						{
-
-							// Read the decrypted bytes from the decrypting stream
-							// and place them in a string.
 							plaintext = srDecrypt.ReadToEnd();
 						}
 					}
@@ -172,7 +210,6 @@ namespace Data_encryption
 			}
 
 			return plaintext;
-
 		}
 		/*
 		public static void Main()
