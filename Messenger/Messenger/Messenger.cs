@@ -35,8 +35,6 @@ namespace Messenger
 		private string privateKey;
 		private string publicKey;
 
-		private bool needWork;
-
 		private Thread checkMailThread;
 		private bool firstStart;
 
@@ -55,8 +53,6 @@ namespace Messenger
 
 			this.privateKey = "";
 			this.publicKey = "";
-
-			this.needWork = true;
 		}
 
 
@@ -212,7 +208,7 @@ namespace Messenger
 		{
 			this.chatID = ((Button)sender).Parent.Controls[0].Text;
 
-			AddChat(((Button)sender).Parent.Controls[1].Text, this.chatID, GetCurrentTimeForMessage());
+			AddChat(((Button)sender).Parent.Controls[1].Text, "34", ((Button)sender).Parent.Controls[0].Text, ((Button)sender).Parent.Controls[1].Text, GetCurrentTimeForMessage());
 
 			CloseOptions();
 		}
@@ -243,6 +239,8 @@ namespace Messenger
 			{
 				string newMessage = httpRequests.GetMessages("fd", "noname");
 				httpRequests.DeleteMessages("fd", "noname");
+
+				Thread.Sleep(1000);
 
 				//if (newMessage != "[]")
 				//{
@@ -289,7 +287,7 @@ namespace Messenger
 
 			for (int i = 0; i < 7; ++i)
 			{
-				AddChat("Something " + i.ToString(), i.ToString(), "6:53 PM");
+				AddChat("Something " + i.ToString(), i.ToString(), DataEncryption.GeneratePublicKey(DataEncryption.GeneratePrivateKey()), i.ToString(), "6:53 PM");
 			}
 			
 			this.message_TextBox.Select();
@@ -312,7 +310,7 @@ namespace Messenger
 			this.Controls.Add(main_SplitContainer);
 		}
 
-		private void AddChat(string name, string id, string time)
+		private void AddChat(string name, string id, string publicKey, string chatName, string time)
 		{
 			PictureBox icon_PictureBox = new System.Windows.Forms.PictureBox
 			{
@@ -368,6 +366,28 @@ namespace Messenger
 				Visible = false
 			};
 
+			Label publicKey_Label = new System.Windows.Forms.Label
+			{
+				AutoSize = true,
+				Location = new System.Drawing.Point(0, 0),
+				Name = "publicKey_Label",
+				Size = new System.Drawing.Size(50, 13),
+				TabIndex = 3,
+				Text = publicKey,
+				Visible = false
+			};
+
+			Label nameChat_Label = new System.Windows.Forms.Label
+			{
+				AutoSize = true,
+				Location = new System.Drawing.Point(0, 0),
+				Name = "nameChat_Label",
+				Size = new System.Drawing.Size(50, 13),
+				TabIndex = 3,
+				Text = chatName,
+				Visible = false
+			};
+
 			Panel chat_Panel = new Panel
 			{
 				BackColor = System.Drawing.Color.Gray,
@@ -380,7 +400,9 @@ namespace Messenger
 			chat_Panel.Controls.Add(name_Label);		//1
 			chat_Panel.Controls.Add(time_Label);		//2
 			chat_Panel.Controls.Add(Message_Label);		//3
-			chat_Panel.Controls.Add(icon_PictureBox);	//4
+			chat_Panel.Controls.Add(icon_PictureBox);   //4
+			chat_Panel.Controls.Add(publicKey_Label);   //5
+			chat_Panel.Controls.Add(nameChat_Label);	//6
 
 			chat_Panel.Click += new EventHandler(this.CreateChat);
 
@@ -469,7 +491,9 @@ namespace Messenger
 
 			if (!isLoad)
 			{
-				this.httpRequests.SendMessage(this.userName, "someone", text);
+				string newMessage = DataEncryption.EncryptMessage(text, this.selectChat.Controls[5].Text);
+
+				this.httpRequests.SendMessage(this.userName, this.selectChat.Controls[6].Text, newMessage);
 			}
 			this.ResumeLayout();
 		}
