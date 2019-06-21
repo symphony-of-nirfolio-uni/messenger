@@ -222,7 +222,6 @@ namespace Messenger
 			this.MinimumSize = new System.Drawing.Size(500, 500);
 			this.Name = "Messenger";
 			this.Text = "Messenger";
-			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Messenger_FormClosed);
 			this.Load += new System.EventHandler(this.Messenger_Load);
 			this.Click += new System.EventHandler(this.Messenger_Click);
 			this.KeyDown += new KeyEventHandler(this.Messenger_KeyDown);

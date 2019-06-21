@@ -427,12 +427,7 @@ namespace Messenger
 			AddMessage(text, time, true, true);
 		}
 
-
-		private void Messenger_FormClosed(object sender, FormClosedEventArgs e)
-		{
-
-		}
-
+		
 		private void GenerateKeys_button_Click(object sender, EventArgs e)
 		{
 			//TODO:
