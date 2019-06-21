@@ -19,6 +19,7 @@ namespace Messenger
 		private HttpRequests httpRequests;
 		private string userName;
 		private string chatID = "";
+		private Panel selectChat;
 
 		private bool optionIsOpen;
 		private Panel option_Panel;
@@ -340,18 +341,18 @@ namespace Messenger
 				Size = new System.Drawing.Size(listOfChat_FlowLayoutPanel.ClientSize.Width - 7, 58),
 				TabIndex = 0
 			};
-			chat_Panel.Controls.Add(id_Label);
-			chat_Panel.Controls.Add(name_Label);
-			chat_Panel.Controls.Add(time_Label);
-			chat_Panel.Controls.Add(Message_Label);
-			chat_Panel.Controls.Add(icon_PictureBox);
+			chat_Panel.Controls.Add(id_Label);			//0
+			chat_Panel.Controls.Add(name_Label);		//1
+			chat_Panel.Controls.Add(time_Label);		//2
+			chat_Panel.Controls.Add(Message_Label);		//3
+			chat_Panel.Controls.Add(icon_PictureBox);	//4
 
 			chat_Panel.Click += new EventHandler(this.CreateChat);
 
 			this.listOfChat_FlowLayoutPanel.Controls.Add(chat_Panel);
 		}
 
-		private void AddMessage(string text, string time, bool forUser = true)
+		private void AddMessage(string text, string time, bool forUser = true, bool isLoad = true)
 		{
 			Size messageBlock_Size = TextRenderer.MeasureText(text, new System.Drawing.Font("Microsoft Sans Serif", 10F), new Size(100, 20), TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
 			messageBlock_Size.Height += 8;
@@ -416,16 +417,26 @@ namespace Messenger
 			message_Panel.Controls.Add(messageBlock_TextBox);
 			message_Panel.Controls.Add(time_Label);
 			message_Panel.Controls.Add(status_PictureBox);
-
 			
 			lineMessage_Panel.Controls.Add(message_Panel);
 
+			this.SuspendLayout();
 			this.chat_FlowLayoutPanel.Controls.Add(lineMessage_Panel);
 			this.chat_FlowLayoutPanel.Controls.SetChildIndex(lineMessage_Panel, 0);
 			this.chat_FlowLayoutPanel.AutoScrollPosition = new Point(22, 100000);
 			UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
 
-			this.httpRequests.SendMessage(this.userName, "someone", text);
+			if (this.selectChat != null && !isLoad)
+			{
+				this.listOfChat_FlowLayoutPanel.Controls.SetChildIndex(this.selectChat, 0);
+				this.selectChat.Controls[3].Text = text;
+			}
+
+			if (!isLoad)
+			{
+				this.httpRequests.SendMessage(this.userName, "someone", text);
+			}
+			this.ResumeLayout();
 		}
 
 
@@ -457,9 +468,10 @@ namespace Messenger
 		
 		private void CreateChat(object sender, EventArgs e)
 		{
-			if (((Panel)sender).Controls[0].Text != chatID)
+			if (((Panel)sender).Controls[0].Text != this.chatID)
 			{
-				chatID = ((Panel)sender).Controls[0].Text;
+				this.selectChat = (Panel)sender;
+				this.chatID = ((Panel)sender).Controls[0].Text;
 
 				this.chat_FlowLayoutPanel.Controls.Clear();
 
@@ -488,13 +500,13 @@ namespace Messenger
 		{
 			if (e.KeyCode == Keys.Enter && e.Modifiers != Keys.Shift && e.Modifiers != Keys.Control && this.message_TextBox.Text != "")
 			{
-				AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), false);
+				AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), false, false);
 				this.needClearMessageTextBox = true;
 				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
 			}
 			else if (e.KeyCode == Keys.J && this.message_TextBox.Text != "")
 			{
-				AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), true);
+				AddMessage(this.message_TextBox.Text, GetCurrentTimeForMessage(), true, false);
 				this.needClearMessageTextBox = true;
 				UpdateFlowLayoutPanel(this.chat_FlowLayoutPanel);
 			}
