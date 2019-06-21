@@ -25,7 +25,13 @@ namespace Messenger
 			client.BaseAddress = new Uri(url);
 		}
 
-        public string SendMessage(string sender, string receiver, string message)
+		public string GetDomain()
+		{
+			return client.BaseAddress.ToString().Remove(client.BaseAddress.ToString().Length - 1);
+		}
+
+
+		public string SendMessage(string sender, string receiver, string message)
         {
             var values = new Dictionary<string, string>
             {
