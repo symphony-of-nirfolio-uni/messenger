@@ -20,6 +20,11 @@ namespace Messenger
             this.client = new HttpClient {BaseAddress = new Uri(url)};
         }
 
+		public void ChangeDomain(string url)
+		{
+			client.BaseAddress = new Uri(url);
+		}
+
         public string SendMessage(string sender, string receiver, string message)
         {
             var values = new Dictionary<string, string>
